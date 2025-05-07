@@ -14,3 +14,6 @@ class ScheduleFacade:
 
     def submit_shift_change(self, request_id, shift_id, staff_id, start_time, end_time, reason):
         return self.controller.request_shift_change(request_id, shift_id, staff_id, start_time, end_time, reason)
+    
+    def login(self, username, password):
+        return self.db.authenticate(username, password)
