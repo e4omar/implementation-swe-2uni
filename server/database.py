@@ -14,6 +14,9 @@ class ScheduleDatabase:
         ]
         self.load_requests()
         self.load_shift_change_requests()
+        self.notifications = {}  # {staff_id: [messages]}
+        self.load_notifications()
+
 
     # ──────────────── AUTH ────────────────
     def authenticate(self, username, password):
@@ -36,11 +39,13 @@ class ScheduleDatabase:
             "staff_id": r.staff_id,
             "start_date": r.start_date,
             "end_date": r.end_date,
-            "reason": r.reason
+            "reason": r.reason,
+            "status": r.status
         } for r in self.time_off_requests]
 
         with open("time_off_requests.json", "w") as f:
-            json.dump(data, f)
+         json.dump(data, f)
+
 
     def load_requests(self):
         if os.path.exists("time_off_requests.json"):
@@ -52,9 +57,11 @@ class ScheduleDatabase:
                         item["staff_id"],
                         item["start_date"],
                         item["end_date"],
-                        item["reason"]
+                        item["reason"],
+                        item.get("status", "Pending")
                     )
                     self.time_off_requests.append(request)
+
 
     # ──────────────── SHIFT-CHANGE REQUESTS ────────────────
     def store_shift_change_request(self, request):
@@ -88,9 +95,45 @@ class ScheduleDatabase:
                         item["staff_id"],
                         item["start_time"],
                         item["end_time"],
-                        item["reason"]
+                        item["reason"],
+                        item.get("status", "Pending")
                     )
                     self.shift_change_requests.append(request)
+
+    def update_time_off_status(self, request_id, new_status):
+        for r in self.time_off_requests:
+            if r.request_id == request_id:
+                r.status = new_status
+                self.save_requests()
+                return True
+        return False
+
+    def update_shift_change_status(self, request_id, new_status):
+        for r in self.shift_change_requests:
+            if r.request_id == request_id:
+                r.status = new_status
+                self.save_shift_change_requests()
+                return True
+        return False
+
+    def add_notification(self, staff_id, message):
+        if staff_id not in self.notifications:
+            self.notifications[staff_id] = []
+        self.notifications[staff_id].append(message)
+        self.save_notifications()
+
+    def get_notifications(self, staff_id):
+        return self.notifications.get(staff_id, [])
+
+    def save_notifications(self):
+        with open("notifications.json", "w") as f:
+            json.dump(self.notifications, f)
+
+    def load_notifications(self):
+        if os.path.exists("notifications.json"):
+            with open("notifications.json", "r") as f:
+                self.notifications = json.load(f)
+
 
 
      
