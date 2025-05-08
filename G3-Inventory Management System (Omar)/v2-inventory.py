@@ -78,18 +78,46 @@ class StockDatabase:
         self.conn.close()
 
 
+class InventoryController:
+    def __init__(self):
+        self.db = StockDatabase()
+
+    def add_new_stock_entry(self, item_id, item_name, quantity_on_hand, reorder_level, supplier_info):
+        self.db.insert_entry(item_id, item_name, quantity_on_hand, reorder_level, supplier_info)
+
+    def modify_stock_entry(self, item_id, item_name=None, quantity_on_hand=None, reorder_level=None, supplier_info=None):
+        self.db.modify_entry(item_id, item_name, quantity_on_hand, reorder_level, supplier_info)
+
+    def search_stock_records(self, item_id=None, item_name=None):
+        return self.db.search_records(item_id, item_name)
+
+    def monitor_stock_records(self):
+        return self.db.get_low_stock_items()
+
+    def generate_usage_report(self):
+        return self.db.retrieve_usage_data()
+
+    def close(self):
+        self.db.close()
+
+
+
+
 def main():
-    db = StockDatabase()
-    db.modify_entry(1, quantity_on_hand=60, supplier_info='Supplier B')
-    db.modify_entry(2, item_name='Potatoes', quantity_on_hand=30, reorder_level=10, supplier_info='Supplier C')
+    controller = InventoryController()
     
+    # Modify stock entries using the controller
+    controller.modify_stock_entry(1, quantity_on_hand=60, supplier_info='Supplier B')
+    controller.modify_stock_entry(2, item_name='Potatodsades', quantity_on_hand=30, reorder_level=10, supplier_info='Supplier C')
     
-    entries = db.retrieve_usage_data()
+    # Retrieve and print usage data using the controller
+    entries = controller.generate_usage_report()
     for entry in entries:
         print(entry)
-    print("Entries inserted successfully.")
-
-    db.close()
+    print("Entries modified successfully.")
+    
+    # Close the controller
+    controller.close()
 
 if __name__ == "__main__":
-    main()  
+    main()
