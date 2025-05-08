@@ -132,21 +132,41 @@ class InventoryUI:
         self.controller.close()
 
 def main():
-    controller = InventoryController()
+    ui = InventoryUI()
     
-    # Modify stock entries using the controller
-    controller.add_new_stock_entry('Potato', 50, 20, 'Supplier A')
-    controller.modify_stock_entry(1, quantity_on_hand=60, supplier_info='Supplier B')
-    controller.modify_stock_entry(2, item_name='Potatodsadddes', quantity_on_hand=30, reorder_level=10, supplier_info='Supplier C')
+    # Test addition of new stock entries
+    print("Adding new stock entries...")
+    ui.addition_request(item_name="Tomatoes", quantity_on_hand=50, reorder_level=20, supplier_info="Supplier A")
+    ui.addition_request(item_name="Potatoes", quantity_on_hand=30, reorder_level=10, supplier_info="Supplier B")
+    print("Stock entries added successfully.\n")
     
-    # Retrieve and print usage data using the controller
-    entries = controller.generate_usage_report()
-    for entry in entries:
-        print(entry)
-    print("Entries modified successfully.")
+    # Test modification of stock entries
+    print("Modifying stock entries...")
+    ui.modify_request(item_id=1, quantity_on_hand=60, supplier_info="Updated Supplier A")
+    ui.modify_request(item_id=2, item_name="Sweet Potatoes", quantity_on_hand=40, reorder_level=15, supplier_info="Updated Supplier B")
+    print("Stock entries modified successfully.\n")
     
-    # Close the controller
-    controller.close()
+    # Test searching for stock records
+    print("Searching for stock records...")
+    search_results = ui.search_request(item_id=1)
+    print("Search results for item_id=1:", search_results)
+    search_results = ui.search_request(item_name="Sweet Potatoes")
+    print("Search results for item_name='Sweet Potatoes':", search_results)
+    print()
+    
+    # Test low stock notification
+    print("Checking for low stock items...")
+    ui._notify_low_stock()
+    print()
+    
+    # Test usage report generation
+    print("Generating usage report...")
+    ui.request_usage_report()
+    print()
+    
+    # Close the UI
+    ui.close()
+    print("Inventory UI closed.")
 
 if __name__ == "__main__":
     main()
