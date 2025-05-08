@@ -105,6 +105,7 @@ class InventoryController:
 class InventoryUI:
     def __init__(self):
         self.controller = InventoryController()
+        self.notify_low_stock()
 
     def addition_request(self, item_name, quantity_on_hand, reorder_level, supplier_info):
         self.controller.add_new_stock_entry(item_name, quantity_on_hand, reorder_level, supplier_info)
@@ -115,10 +116,18 @@ class InventoryUI:
     def search_request(self, item_id=None, item_name=None):
         return self.controller.search_stock_records(item_id, item_name)
 
-    def _notify_low_stock(self):
+    def notify_low_stock(self):
+        print("Checking for low stock items...")
         low_stock_items = self.controller.monitor_stock_records()
-        for item in low_stock_items:
-            print(f"Low stock alert: {item[1]} (ID: {item[0]}) is below reorder level.")
+        if not low_stock_items:
+            print("No low stock items found.")
+            print()
+        else:
+            print("Low stock items found:")
+            for item in low_stock_items:
+                print(f"Item ID: {item[0]}, Item Name: {item[1]}, Quantity on Hand: {item[2]}, Reorder Level: {item[3]}, Supplier Info: {item[4]}")
+            print()
+
 
     def request_usage_report(self):
         usage_data = self.controller.generate_usage_report()
@@ -143,7 +152,7 @@ def main():
     # Test modification of stock entries
     print("Modifying stock entries...")
     ui.modify_request(item_id=1, quantity_on_hand=60, supplier_info="Updated Supplier A")
-    ui.modify_request(item_id=2, item_name="Sweet Potatoes", quantity_on_hand=40, reorder_level=15, supplier_info="Updated Supplier B")
+    ui.modify_request(item_id=2, item_name="Sweet Potatoes", quantity_on_hand=12, reorder_level=15, supplier_info="Updated Supplier B")
     print("Stock entries modified successfully.\n")
     
     # Test searching for stock records
@@ -155,9 +164,9 @@ def main():
     print()
     
     # Test low stock notification
-    print("Checking for low stock items...")
-    ui._notify_low_stock()
-    print()
+    #print("Checking for low stock items...")
+    #ui.notify_low_stock()
+    #print()
     
     # Test usage report generation
     print("Generating usage report...")
