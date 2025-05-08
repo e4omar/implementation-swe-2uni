@@ -82,8 +82,8 @@ class InventoryController:
     def __init__(self):
         self.db = StockDatabase()
 
-    def add_new_stock_entry(self, item_id, item_name, quantity_on_hand, reorder_level, supplier_info):
-        self.db.insert_entry(item_id, item_name, quantity_on_hand, reorder_level, supplier_info)
+    def add_new_stock_entry(self, item_name, quantity_on_hand, reorder_level, supplier_info):
+        self.db.insert_entry(item_name, quantity_on_hand, reorder_level, supplier_info)
 
     def modify_stock_entry(self, item_id, item_name=None, quantity_on_hand=None, reorder_level=None, supplier_info=None):
         self.db.modify_entry(item_id, item_name, quantity_on_hand, reorder_level, supplier_info)
@@ -93,22 +93,51 @@ class InventoryController:
 
     def monitor_stock_records(self):
         return self.db.get_low_stock_items()
+        # This will be complated later
 
     def generate_usage_report(self):
         return self.db.retrieve_usage_data()
+        # This will be complated later
 
     def close(self):
         self.db.close()
 
+class InventoryUI:
+    def __init__(self):
+        self.controller = InventoryController()
 
+    def addition_request(self, item_name, quantity_on_hand, reorder_level, supplier_info):
+        self.controller.add_new_stock_entry(item_name, quantity_on_hand, reorder_level, supplier_info)
 
+    def modify_request(self, item_id, item_name=None, quantity_on_hand=None, reorder_level=None, supplier_info=None):
+        self.controller.modify_stock_entry(item_id, item_name, quantity_on_hand, reorder_level, supplier_info)
+
+    def search_request(self, item_id=None, item_name=None):
+        return self.controller.search_stock_records(item_id, item_name)
+
+    def _notify_low_stock(self):
+        low_stock_items = self.controller.monitor_stock_records()
+        for item in low_stock_items:
+            print(f"Low stock alert: {item[1]} (ID: {item[0]}) is below reorder level.")
+
+    def request_usage_report(self):
+        usage_data = self.controller.generate_usage_report()
+        self.display_usage_report(usage_data)
+
+    def display_usage_report(self, usage_data):
+        for record in usage_data:
+            print(record)
+
+    def close(self):
+        self.controller.close()
 
 def main():
     controller = InventoryController()
     
     # Modify stock entries using the controller
+    controller.add_new_stock_entry('Potato', 50, 20, 'Supplier A')
     controller.modify_stock_entry(1, quantity_on_hand=60, supplier_info='Supplier B')
-    controller.modify_stock_entry(2, item_name='Potatodsades', quantity_on_hand=30, reorder_level=10, supplier_info='Supplier C')
+    controller.modify_stock_entry(2, item_name='Potatodsadddes', quantity_on_hand=30, reorder_level=10, supplier_info='Supplier C')
     
     # Retrieve and print usage data using the controller
     entries = controller.generate_usage_report()
