@@ -168,13 +168,26 @@ class InventoryUI:
 
     def submit_new_entry(self):
         item_name = self.item_name_entry.get()
-        quantity_on_hand = int(self.quantity_entry.get())
-        reorder_level = int(self.reorder_entry.get())
+        quantity_on_hand = self.quantity_entry.get()
+        reorder_level = self.reorder_entry.get()
         supplier_info = self.supplier_entry.get()
+
+        # Validate inputs
+        if not item_name or not quantity_on_hand or not reorder_level:
+            messagebox.showerror("Error", "All fields must be filled out.")
+            return
+
+        try:
+            quantity_on_hand = int(quantity_on_hand)
+            reorder_level = int(reorder_level)
+        except ValueError:
+            messagebox.showerror("Error", "Quantity on Hand and Reorder Level must be integers.")
+            return
 
         self.controller.add_new_stock_entry(item_name, quantity_on_hand, reorder_level, supplier_info)
         messagebox.showinfo("Success", "New entry added successfully!")
         self.new_entry_window.destroy()
+    
 
     def view_records(self):
         records = self.controller.generate_usage_report()
