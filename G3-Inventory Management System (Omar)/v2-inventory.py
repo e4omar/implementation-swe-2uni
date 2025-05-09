@@ -118,53 +118,78 @@ class InventoryUI:
             self.controller = InventoryController()
             self.root = root
             self.root.title("Restaurant Inventory Management")
+            self.set_main_window()
             self.create_widgets()
         except Exception as e:
             messagebox.showerror("Error", f"Initialization error: {e}")
 
+    def set_main_window(self):
+        # Set fixed size and center on screen
+        width, height = 400, 300
+        self.root.geometry(f"{width}x{height}")
+        self.root.resizable(False, False)
+        self.root.update_idletasks()
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width // 2) - (width // 2)
+        y = (screen_height // 2) - (height // 2)
+        self.root.geometry(f"{width}x{height}+{x}+{y}")
+        self.main_x = x
+        self.main_y = y
+        self.main_width = width
+        self.main_height = height
+
+    def get_child_window_position(self):
+        # Position child window to the right of the main menu
+        child_x = self.main_x + self.main_width + 20
+        child_y = self.main_y
+        return f"400x300+{child_x}+{child_y}"
+
     def create_widgets(self):
         try:
-            # Main Menu 
-            # Creates buttons on main menu  
             self.add_button = tk.Button(self.root, text="Add New Entry", command=self.add_new_entry)
-            self.add_button.pack()
+            self.add_button.pack(pady=5)
 
             self.view_button = tk.Button(self.root, text="View Current Records", command=self.view_records)
-            self.view_button.pack()
+            self.view_button.pack(pady=5)
 
             self.low_stock_button = tk.Button(self.root, text="Notify Low Stock", command=self.notify_low_stock)
-            self.low_stock_button.pack()
+            self.low_stock_button.pack(pady=5)
 
             self.modify_button = tk.Button(self.root, text="Modify Stock Entry", command=self.modify_entry)
-            self.modify_button.pack()
+            self.modify_button.pack(pady=5)
 
             self.delete_button = tk.Button(self.root, text="Delete Stock Entry", command=self.delete_entry)
-            self.delete_button.pack()
+            self.delete_button.pack(pady=5)
         except Exception as e:
             messagebox.showerror("Error", f"Error creating main menu widgets: {e}")
 
     def add_new_entry(self):
-        # Creates a new window for adding a new entry
-        self.new_entry_window = tk.Toplevel(self.root)
-        self.new_entry_window.title("Add New Entry")
+        try:
+            self.new_entry_window = tk.Toplevel(self.root)
+            self.new_entry_window.title("Add New Entry")
+            self.new_entry_window.geometry(self.get_child_window_position())
+            self.new_entry_window.resizable(False, False)
 
-        tk.Label(self.new_entry_window, text="Item Name").pack()
-        self.item_name_entry = tk.Entry(self.new_entry_window)
-        self.item_name_entry.pack()
+            tk.Label(self.new_entry_window, text="Item Name").pack()
+            self.item_name_entry = tk.Entry(self.new_entry_window)
+            self.item_name_entry.pack()
 
-        tk.Label(self.new_entry_window, text="Quantity on Hand").pack()
-        self.quantity_entry = tk.Entry(self.new_entry_window)
-        self.quantity_entry.pack()
+            tk.Label(self.new_entry_window, text="Quantity on Hand").pack()
+            self.quantity_entry = tk.Entry(self.new_entry_window)
+            self.quantity_entry.pack()
 
-        tk.Label(self.new_entry_window, text="Reorder Level").pack()
-        self.reorder_entry = tk.Entry(self.new_entry_window)
-        self.reorder_entry.pack()
+            tk.Label(self.new_entry_window, text="Reorder Level").pack()
+            self.reorder_entry = tk.Entry(self.new_entry_window)
+            self.reorder_entry.pack()
 
-        tk.Label(self.new_entry_window, text="Supplier Info").pack()
-        self.supplier_entry = tk.Entry(self.new_entry_window)
-        self.supplier_entry.pack()
+            tk.Label(self.new_entry_window, text="Supplier Info").pack()
+            self.supplier_entry = tk.Entry(self.new_entry_window)
+            self.supplier_entry.pack()
 
-        tk.Button(self.new_entry_window, text="Submit", command=self.submit_new_entry).pack()
+            tk.Button(self.new_entry_window, text="Submit", command=self.submit_new_entry).pack(pady=10)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open Add New Entry window: {e}")
 
     def submit_new_entry(self):
         item_name = self.item_name_entry.get()
@@ -172,7 +197,6 @@ class InventoryUI:
         reorder_level = self.reorder_entry.get()
         supplier_info = self.supplier_entry.get()
 
-        # Validate inputs
         if not item_name or not quantity_on_hand or not reorder_level:
             messagebox.showerror("Error", "All fields must be filled out.")
             return
@@ -184,54 +208,95 @@ class InventoryUI:
             messagebox.showerror("Error", "Quantity on Hand and Reorder Level must be integers.")
             return
 
-        self.controller.add_new_stock_entry(item_name, quantity_on_hand, reorder_level, supplier_info)
-        messagebox.showinfo("Success", "New entry added successfully!")
-        self.new_entry_window.destroy()
-    
+        try:
+            self.controller.add_new_stock_entry(item_name, quantity_on_hand, reorder_level, supplier_info)
+            messagebox.showinfo("Success", "New entry added successfully!")
+            self.new_entry_window.destroy()
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to add entry: {e}")
 
     def view_records(self):
-        records = self.controller.generate_usage_report()
-        self.records_window = tk.Toplevel(self.root)
-        self.records_window.title("Current Records")
+        try:
+            records = self.controller.generate_usage_report()
+            self.records_window = tk.Toplevel(self.root)
+            self.records_window.title("Current Records")
+            
+            # Set width to 650 instead of 400. height of 300 
+            # position to the right of main menu
+            child_x = self.main_x + self.main_width + 20
+            child_y = self.main_y
+            self.records_window.geometry(f"650x300+{child_x}+{child_y}")
+            self.records_window.resizable(True, True)
 
-        for record in records:
-            tk.Label(self.records_window, text=str(record)).pack()
+            # Setting up a Text widget with a scrollbar for better display
+            frame = tk.Frame(self.records_window)
+            frame.pack(fill=tk.BOTH, expand=True)
+            text = tk.Text(frame, wrap=tk.NONE, height=15, width=50)
+            text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            scrollbar = tk.Scrollbar(frame, command=text.yview)
+            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            text.config(yscrollcommand=scrollbar.set)
+
+            # Add column headers
+            text.insert(tk.END, f"{'ID':<5} {'Name':<20} {'Qty':<6} {'Reorder':<8} {'Supplier':<20}\n")
+            text.insert(tk.END, "-"*65 + "\n")
+            for record in records:
+                text.insert(
+                    tk.END,
+                    f"{str(record[0]):<5} {str(record[1]):<20} {str(record[2]):<6} {str(record[3]):<8} {str(record[4]):<20}\n"
+                )
+            text.config(state=tk.DISABLED)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to view records: {e}")
 
     def notify_low_stock(self):
-        low_stock_items = self.controller.monitor_stock_records()
-        if not low_stock_items:
-            messagebox.showinfo("Low Stock", "No low stock items found.")
-        else:
+        try:
+            low_stock_items = self.controller.monitor_stock_records()
             self.low_stock_window = tk.Toplevel(self.root)
             self.low_stock_window.title("Low Stock Items")
-            for item in low_stock_items:
-                tk.Label(self.low_stock_window, text=f"Item ID: {item[0]}, Item Name: {item[1]}, Quantity on Hand: {item[2]}, Reorder Level: {item[3]}, Supplier Info: {item[4]}").pack()
+            self.low_stock_window.geometry(self.get_child_window_position())
+            self.low_stock_window.resizable(False, False)
+            if not low_stock_items:
+                tk.Label(self.low_stock_window, text="No low stock items found.").pack(pady=10)
+            else:
+                for item in low_stock_items:
+                    tk.Label(
+                        self.low_stock_window,
+                        text=f"Item ID: {item[0]}, Item Name: {item[1]}, Quantity on Hand: {item[2]}, Reorder Level: {item[3]}, Supplier Info: {item[4]}"
+                    ).pack()
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to notify low stock: {e}")
 
     def modify_entry(self):
-        self.modify_window = tk.Toplevel(self.root)
-        self.modify_window.title("Modify Stock Entry")
+        try:
+            self.modify_window = tk.Toplevel(self.root)
+            self.modify_window.title("Modify Stock Entry")
+            self.modify_window.geometry(self.get_child_window_position())
+            self.modify_window.resizable(False, False)
 
-        tk.Label(self.modify_window, text="Item ID").pack()
-        self.modify_item_id_entry = tk.Entry(self.modify_window)
-        self.modify_item_id_entry.pack()
+            tk.Label(self.modify_window, text="Item ID").pack()
+            self.modify_item_id_entry = tk.Entry(self.modify_window)
+            self.modify_item_id_entry.pack()
 
-        tk.Label(self.modify_window, text="Item Name").pack()
-        self.modify_item_name_entry = tk.Entry(self.modify_window)
-        self.modify_item_name_entry.pack()
+            tk.Label(self.modify_window, text="Item Name").pack()
+            self.modify_item_name_entry = tk.Entry(self.modify_window)
+            self.modify_item_name_entry.pack()
 
-        tk.Label(self.modify_window, text="Quantity on Hand").pack()
-        self.modify_quantity_entry = tk.Entry(self.modify_window)
-        self.modify_quantity_entry.pack()
+            tk.Label(self.modify_window, text="Quantity on Hand").pack()
+            self.modify_quantity_entry = tk.Entry(self.modify_window)
+            self.modify_quantity_entry.pack()
 
-        tk.Label(self.modify_window, text="Reorder Level").pack()
-        self.modify_reorder_entry = tk.Entry(self.modify_window)
-        self.modify_reorder_entry.pack()
+            tk.Label(self.modify_window, text="Reorder Level").pack()
+            self.modify_reorder_entry = tk.Entry(self.modify_window)
+            self.modify_reorder_entry.pack()
 
-        tk.Label(self.modify_window, text="Supplier Info").pack()
-        self.modify_supplier_entry = tk.Entry(self.modify_window)
-        self.modify_supplier_entry.pack()
+            tk.Label(self.modify_window, text="Supplier Info").pack()
+            self.modify_supplier_entry = tk.Entry(self.modify_window)
+            self.modify_supplier_entry.pack()
 
-        tk.Button(self.modify_window, text="Submit", command=self.submit_modify_entry).pack()
+            tk.Button(self.modify_window, text="Submit", command=self.submit_modify_entry).pack(pady=10)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open Modify Entry window: {e}")
 
     def submit_modify_entry(self):
         item_id = self.modify_item_id_entry.get()
@@ -240,7 +305,6 @@ class InventoryUI:
         reorder_level = self.modify_reorder_entry.get()
         supplier_info = self.modify_supplier_entry.get()
 
-        # Validate Item ID
         if not item_id:
             messagebox.showerror("Error", "Item ID must be provided.")
             return
@@ -251,7 +315,6 @@ class InventoryUI:
             messagebox.showerror("Error", "Item ID must be an integer.")
             return
 
-        # Validate Quantity on Hand and Reorder Level if provided
         if quantity_on_hand:
             try:
                 quantity_on_hand = int(quantity_on_hand)
@@ -276,25 +339,31 @@ class InventoryUI:
         if not supplier_info:
             supplier_info = None
 
-        self.controller.modify_stock_entry(item_id, item_name, quantity_on_hand, reorder_level, supplier_info)
-        messagebox.showinfo("Success", "Stock entry modified successfully!")
-        self.modify_window.destroy()
-
+        try:
+            self.controller.modify_stock_entry(item_id, item_name, quantity_on_hand, reorder_level, supplier_info)
+            messagebox.showinfo("Success", "Stock entry modified successfully!")
+            self.modify_window.destroy()
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to modify entry: {e}")
 
     def delete_entry(self):
-        self.delete_window = tk.Toplevel(self.root)
-        self.delete_window.title("Delete Stock Entry")
+        try:
+            self.delete_window = tk.Toplevel(self.root)
+            self.delete_window.title("Delete Stock Entry")
+            self.delete_window.geometry(self.get_child_window_position())
+            self.delete_window.resizable(False, False)
 
-        tk.Label(self.delete_window, text="Item ID").pack()
-        self.delete_item_id_entry = tk.Entry(self.delete_window)
-        self.delete_item_id_entry.pack()
+            tk.Label(self.delete_window, text="Item ID").pack()
+            self.delete_item_id_entry = tk.Entry(self.delete_window)
+            self.delete_item_id_entry.pack()
 
-        tk.Button(self.delete_window, text="Submit", command=self.submit_delete_entry).pack()
+            tk.Button(self.delete_window, text="Submit", command=self.submit_delete_entry).pack(pady=10)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open Delete Entry window: {e}")
 
     def submit_delete_entry(self):
         item_id = self.delete_item_id_entry.get()
 
-        # Validate input
         if not item_id:
             messagebox.showerror("Error", "Item ID must be provided.")
             return
@@ -305,9 +374,12 @@ class InventoryUI:
             messagebox.showerror("Error", "Item ID must be an integer.")
             return
 
-        self.controller.delete_stock_entry(item_id)
-        messagebox.showinfo("Success", "Stock entry deleted successfully!")
-        self.delete_window.destroy()
+        try:
+            self.controller.delete_stock_entry(item_id)
+            messagebox.showinfo("Success", "Stock entry deleted successfully!")
+            self.delete_window.destroy()
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to delete entry: {e}")
 
     def close(self):
         try:
