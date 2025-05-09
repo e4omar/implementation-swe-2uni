@@ -216,11 +216,22 @@ def show_manager_dashboard(user):
 
         tk.Button(top, text="Submit", command=submit).pack(pady=5)
 
+    def view_staff_records():
+        records = facade.get_all_staff()
+        if not records:
+            messagebox.showinfo("Staff Records", "No staff found.")
+            return
+        result = "\n\n".join([f"ID: {r[0]} | Name: {r[1]} | Role: {r[2]} | Username: {r[3]}" for r in records])
+        messagebox.showinfo("Staff Records", result)
+
+
+
     tk.Button(dashboard, text="View Time-Off Requests", command=view_requests).pack(pady=5)
     tk.Button(dashboard, text="Approve/Reject Time-Off", command=approve_request).pack(pady=5)
     tk.Button(dashboard, text="Create Staff Schedule", command=create_schedule).pack(pady=5)
     tk.Button(dashboard, text="View Shift-Change Requests", command=view_shift_requests).pack(pady=5)
     tk.Button(dashboard, text="Approve/Reject Shift Change", command=approve_shift_request).pack(pady=5)
+    tk.Button(dashboard, text="View Staff Records", command=view_staff_records).pack(pady=5)
     tk.Button(dashboard, text="Exit", command=dashboard.destroy).pack(pady=10)
 
 

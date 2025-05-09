@@ -50,3 +50,6 @@ class ScheduleController:
 
     def update_shift_change_status(self, request_id, new_status):
         return database.update_shift_change_status(request_id, new_status)
+    
+    def get_all_staff_records(self):
+        return database.get_all_staff()

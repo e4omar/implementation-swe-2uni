@@ -46,4 +46,8 @@ class ScheduleFacade:
             return "✅ Status updated."
         else:
             return "❌ Request not found."
+        
+    def get_all_staff(self):
+        return self.controller.get_all_staff_records()
+
 

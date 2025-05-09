@@ -148,4 +148,15 @@ def update_shift_change_status(request_id, new_status):
     conn.close()
     return updated > 0
 
+# -------- View Staff Records ---------
+
+def get_all_staff():
+    conn = sqlite3.connect("scheduling.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT staff_id, name, role, username FROM Staff")
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+
 
