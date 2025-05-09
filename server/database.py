@@ -148,3 +148,4 @@ def update_shift_change_status(request_id, new_status):
     conn.close()
     return updated > 0
 
+

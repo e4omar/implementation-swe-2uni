@@ -71,3 +71,4 @@ conn.commit()
 conn.close()
 
 print("✅ Database initialized successfully.")
+    
