@@ -1,4 +1,6 @@
 import sqlite3
+import tkinter as tk
+from tkinter import messagebox
 
 # Create the database and table with auto-incrementing item_id
 conn = sqlite3.connect('restaurant_inventory.db')
@@ -18,7 +20,6 @@ conn.commit()
 conn.close()
 
 print("Database created successfully.")
-
 
 class StockDatabase:
     def __init__(self, db_name='restaurant_inventory.db'):
@@ -77,7 +78,6 @@ class StockDatabase:
     def close(self):
         self.conn.close()
 
-
 class InventoryController:
     def __init__(self):
         self.db = StockDatabase()
@@ -93,87 +93,94 @@ class InventoryController:
 
     def monitor_stock_records(self):
         return self.db.get_low_stock_items()
-        # This will be complated later
 
     def generate_usage_report(self):
         return self.db.retrieve_usage_data()
-        # This will be complated later
 
     def close(self):
         self.db.close()
 
 class InventoryUI:
-    def __init__(self):
+    def __init__(self, root):
         self.controller = InventoryController()
-        self.notify_low_stock()
+        self.root = root
+        self.root.title("Restaurant Inventory Management")
+        self.create_widgets()
 
-    def addition_request(self, item_name, quantity_on_hand, reorder_level, supplier_info):
+    def create_widgets(self):
+        # Main Menu 
+        # Create buttons and entry fields
+        self.add_button = tk.Button(self.root, text="Add New Entry", command=self.add_new_entry)
+        self.add_button.pack()
+
+        self.view_button = tk.Button(self.root, text="View Current Records", command=self.view_records)
+        self.view_button.pack()
+
+        self.low_stock_button = tk.Button(self.root, text="Notify Low Stock", command=self.notify_low_stock)
+        self.low_stock_button.pack()
+
+    def add_new_entry(self):
+
+        # Creates a new window for adding a new entry
+        self.new_entry_window = tk.Toplevel(self.root)
+        self.new_entry_window.title("Add New Entry")
+
+        #Label is text that is displayed to the user
+        #Entry is a widget that store user input
+        tk.Label(self.new_entry_window, text="Item Name").pack()
+        self.item_name_entry = tk.Entry(self.new_entry_window)
+        self.item_name_entry.pack()
+
+        tk.Label(self.new_entry_window, text="Quantity on Hand").pack()
+        self.quantity_entry = tk.Entry(self.new_entry_window)
+        self.quantity_entry.pack()
+
+        tk.Label(self.new_entry_window, text="Reorder Level").pack()
+        self.reorder_entry = tk.Entry(self.new_entry_window)
+        self.reorder_entry.pack()
+
+        tk.Label(self.new_entry_window, text="Supplier Info").pack()
+        self.supplier_entry = tk.Entry(self.new_entry_window)
+        self.supplier_entry.pack()
+
+        tk.Button(self.new_entry_window, text="Submit", command=self.submit_new_entry).pack()
+
+    def submit_new_entry(self):
+        # get() is used to retrieve the text from the entry box widget
+        item_name = self.item_name_entry.get()
+        quantity_on_hand = int(self.quantity_entry.get())
+        reorder_level = int(self.reorder_entry.get())
+        supplier_info = self.supplier_entry.get()
+
         self.controller.add_new_stock_entry(item_name, quantity_on_hand, reorder_level, supplier_info)
+        messagebox.showinfo("Success", "New entry added successfully!")
+        self.new_entry_window.destroy()
 
-    def modify_request(self, item_id, item_name=None, quantity_on_hand=None, reorder_level=None, supplier_info=None):
-        self.controller.modify_stock_entry(item_id, item_name, quantity_on_hand, reorder_level, supplier_info)
+    def view_records(self):
+        records = self.controller.generate_usage_report()
+        self.records_window = tk.Toplevel(self.root)
+        self.records_window.title("Current Records")
 
-    def search_request(self, item_id=None, item_name=None):
-        return self.controller.search_stock_records(item_id, item_name)
+        for record in records:
+            tk.Label(self.records_window, text=str(record)).pack()
 
     def notify_low_stock(self):
-        print("Checking for low stock items...")
         low_stock_items = self.controller.monitor_stock_records()
         if not low_stock_items:
-            print("No low stock items found.")
-            print()
+            messagebox.showinfo("Low Stock", "No low stock items found.")
         else:
-            print("Low stock items found:")
+            self.low_stock_window = tk.Toplevel(self.root)
+            self.low_stock_window.title("Low Stock Items")
             for item in low_stock_items:
-                print(f"Item ID: {item[0]}, Item Name: {item[1]}, Quantity on Hand: {item[2]}, Reorder Level: {item[3]}, Supplier Info: {item[4]}")
-            print()
-
-
-    def request_usage_report(self):
-        usage_data = self.controller.generate_usage_report()
-        self.display_usage_report(usage_data)
-
-    def display_usage_report(self, usage_data):
-        for record in usage_data:
-            print(record)
+                tk.Label(self.low_stock_window, text=f"Item ID: {item[0]}, Item Name: {item[1]}, Quantity on Hand: {item[2]}, Reorder Level: {item[3]}, Supplier Info: {item[4]}").pack()
 
     def close(self):
         self.controller.close()
 
 def main():
-    ui = InventoryUI()
-    
-    # Test addition of new stock entries
-    print("Adding new stock entries...")
-    ui.addition_request(item_name="Tomatoes", quantity_on_hand=50, reorder_level=20, supplier_info="Supplier A")
-    ui.addition_request(item_name="Potatoes", quantity_on_hand=30, reorder_level=10, supplier_info="Supplier B")
-    print("Stock entries added successfully.\n")
-    
-    # Test modification of stock entries
-    print("Modifying stock entries...")
-    ui.modify_request(item_id=1, quantity_on_hand=60, supplier_info="Updated Supplier A")
-    ui.modify_request(item_id=2, item_name="Sweet Potatoes", quantity_on_hand=12, reorder_level=15, supplier_info="Updated Supplier B")
-    print("Stock entries modified successfully.\n")
-    
-    # Test searching for stock records
-    print("Searching for stock records...")
-    search_results = ui.search_request(item_id=1)
-    print("Search results for item_id=1:", search_results)
-    search_results = ui.search_request(item_name="Sweet Potatoes")
-    print("Search results for item_name='Sweet Potatoes':", search_results)
-    print()
-    
-    # Test low stock notification
-    #print("Checking for low stock items...")
-    #ui.notify_low_stock()
-    #print()
-    
-    # Test usage report generation
-    print("Generating usage report...")
-    ui.request_usage_report()
-    print()
-    
-    # Close the UI
+    root = tk.Tk()
+    ui = InventoryUI(root)
+    root.mainloop()
     ui.close()
     print("Inventory UI closed.")
 
