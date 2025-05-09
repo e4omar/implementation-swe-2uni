@@ -1,6 +1,7 @@
 class OrderManagement:
     def __init__(self):
         self.orders_dict = {}
+        # id system need to be improved
 
     def add_new_order(self, table_num, items, special_requests):
         order_id = len(self.orders_dict) + 1
