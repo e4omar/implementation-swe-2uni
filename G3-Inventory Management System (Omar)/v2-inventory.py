@@ -139,11 +139,18 @@ class InventoryUI:
         self.main_width = width
         self.main_height = height
 
-    def get_child_window_position(self):
+    def get_child_window_position(self, longer_width = False):
+
         # Position child window to the right of the main menu
+        width = 400
+        height = 300
+
+        if longer_width:
+            width = 650
+        
         child_x = self.main_x + self.main_width + 20
         child_y = self.main_y
-        return f"400x300+{child_x}+{child_y}"
+        return f"{width}x300+{child_x}+{child_y}"
 
     def create_widgets(self):
         try:
@@ -223,9 +230,7 @@ class InventoryUI:
             
             # Set width to 650 instead of 400. height of 300 
             # position to the right of main menu
-            child_x = self.main_x + self.main_width + 20
-            child_y = self.main_y
-            self.records_window.geometry(f"650x300+{child_x}+{child_y}")
+            self.records_window.geometry(self.get_child_window_position(longer_width=True))
             self.records_window.resizable(True, True)
 
             # Setting up a Text widget with a scrollbar for better display
@@ -254,16 +259,25 @@ class InventoryUI:
             low_stock_items = self.controller.monitor_stock_records()
             self.low_stock_window = tk.Toplevel(self.root)
             self.low_stock_window.title("Low Stock Items")
-            self.low_stock_window.geometry(self.get_child_window_position())
+            self.low_stock_window.geometry(self.get_child_window_position(longer_width=True))
             self.low_stock_window.resizable(False, False)
+
+            text = tk.Text(self.low_stock_window, wrap=tk.NONE, height=15, width=100)
+            text.pack(fill=tk.BOTH, expand=True)
+
+            # Add column headers
+            text.insert(tk.END, f"{'ID':<5} {'Name':<30} {'Qty':<10} {'Reorder':<10} {'Supplier':<40}\n")
+            text.insert(tk.END, "-"*110 + "\n")
+
             if not low_stock_items:
-                tk.Label(self.low_stock_window, text="No low stock items found.").pack(pady=10)
+                text.insert(tk.END, "No low stock items found.\n")
             else:
                 for item in low_stock_items:
-                    tk.Label(
-                        self.low_stock_window,
-                        text=f"Item ID: {item[0]}, Item Name: {item[1]}, Quantity on Hand: {item[2]}, Reorder Level: {item[3]}, Supplier Info: {item[4]}"
-                    ).pack()
+                    text.insert(
+                        tk.END,
+                        f"{str(item[0]):<5} {str(item[1]):<30} {str(item[2]):<10} {str(item[3]):<10} {str(item[4]):<40}\n"
+                    )
+            text.config(state=tk.DISABLED)
         except Exception as e:
             messagebox.showerror("Error", f"Failed to notify low stock: {e}")
 
