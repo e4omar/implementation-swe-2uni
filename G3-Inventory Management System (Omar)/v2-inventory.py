@@ -53,6 +53,10 @@ class StockDatabase:
         self.cursor.execute(query, params)
         self.conn.commit()
 
+    def delete_entry(self, item_id):
+        self.cursor.execute('DELETE FROM Inventory WHERE item_id = ?', (item_id,))
+        self.conn.commit()
+
     def search_records(self, item_id=None, item_name=None):
         query = 'SELECT * FROM Inventory WHERE '
         params = []
@@ -88,6 +92,9 @@ class InventoryController:
     def modify_stock_entry(self, item_id, item_name=None, quantity_on_hand=None, reorder_level=None, supplier_info=None):
         self.db.modify_entry(item_id, item_name, quantity_on_hand, reorder_level, supplier_info)
 
+    def delete_stock_entry(self, item_id):
+        self.db.delete_entry(item_id)
+
     def search_stock_records(self, item_id=None, item_name=None):
         return self.db.search_records(item_id, item_name)
 
@@ -119,14 +126,17 @@ class InventoryUI:
         self.low_stock_button = tk.Button(self.root, text="Notify Low Stock", command=self.notify_low_stock)
         self.low_stock_button.pack()
 
-    def add_new_entry(self):
+        self.modify_button = tk.Button(self.root, text="Modify Stock Entry", command=self.modify_entry)
+        self.modify_button.pack()
 
+        self.delete_button = tk.Button(self.root, text="Delete Stock Entry", command=self.delete_entry)
+        self.delete_button.pack()
+
+    def add_new_entry(self):
         # Creates a new window for adding a new entry
         self.new_entry_window = tk.Toplevel(self.root)
         self.new_entry_window.title("Add New Entry")
 
-        #Label is text that is displayed to the user
-        #Entry is a widget that store user input
         tk.Label(self.new_entry_window, text="Item Name").pack()
         self.item_name_entry = tk.Entry(self.new_entry_window)
         self.item_name_entry.pack()
@@ -146,7 +156,6 @@ class InventoryUI:
         tk.Button(self.new_entry_window, text="Submit", command=self.submit_new_entry).pack()
 
     def submit_new_entry(self):
-        # get() is used to retrieve the text from the entry box widget
         item_name = self.item_name_entry.get()
         quantity_on_hand = int(self.quantity_entry.get())
         reorder_level = int(self.reorder_entry.get())
@@ -173,6 +182,59 @@ class InventoryUI:
             self.low_stock_window.title("Low Stock Items")
             for item in low_stock_items:
                 tk.Label(self.low_stock_window, text=f"Item ID: {item[0]}, Item Name: {item[1]}, Quantity on Hand: {item[2]}, Reorder Level: {item[3]}, Supplier Info: {item[4]}").pack()
+
+    def modify_entry(self):
+        self.modify_window = tk.Toplevel(self.root)
+        self.modify_window.title("Modify Stock Entry")
+
+        tk.Label(self.modify_window, text="Item ID").pack()
+        self.modify_item_id_entry = tk.Entry(self.modify_window)
+        self.modify_item_id_entry.pack()
+
+        tk.Label(self.modify_window, text="Item Name").pack()
+        self.modify_item_name_entry = tk.Entry(self.modify_window)
+        self.modify_item_name_entry.pack()
+
+        tk.Label(self.modify_window, text="Quantity on Hand").pack()
+        self.modify_quantity_entry = tk.Entry(self.modify_window)
+        self.modify_quantity_entry.pack()
+
+        tk.Label(self.modify_window, text="Reorder Level").pack()
+        self.modify_reorder_entry = tk.Entry(self.modify_window)
+        self.modify_reorder_entry.pack()
+
+        tk.Label(self.modify_window, text="Supplier Info").pack()
+        self.modify_supplier_entry = tk.Entry(self.modify_window)
+        self.modify_supplier_entry.pack()
+
+        tk.Button(self.modify_window, text="Submit", command=self.submit_modify_entry).pack()
+
+    def submit_modify_entry(self):
+        item_id = int(self.modify_item_id_entry.get())
+        item_name = self.modify_item_name_entry.get()
+        quantity_on_hand = int(self.modify_quantity_entry.get())
+        reorder_level = int(self.modify_reorder_entry.get())
+        supplier_info = self.modify_supplier_entry.get()
+
+        self.controller.modify_stock_entry(item_id, item_name, quantity_on_hand, reorder_level, supplier_info)
+        messagebox.showinfo("Success", "Stock entry modified successfully!")
+        self.modify_window.destroy()
+
+    def delete_entry(self):
+        self.delete_window = tk.Toplevel(self.root)
+        self.delete_window.title("Delete Stock Entry")
+
+        tk.Label(self.delete_window, text="Item ID").pack()
+        self.delete_item_id_entry = tk.Entry(self.delete_window)
+        self.delete_item_id_entry.pack()
+
+        tk.Button(self.delete_window, text="Submit", command=self.submit_delete_entry).pack()
+
+    def submit_delete_entry(self):
+        item_id = int(self.delete_item_id_entry.get())
+        self.controller.delete_stock_entry(item_id)
+        messagebox.showinfo("Success", "Stock entry deleted successfully!")
+        self.delete_window.destroy()
 
     def close(self):
         self.controller.close()
