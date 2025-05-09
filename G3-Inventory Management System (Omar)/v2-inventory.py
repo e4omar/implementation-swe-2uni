@@ -2,7 +2,6 @@ import sqlite3
 import tkinter as tk
 from tkinter import messagebox
 
-# Create the database and table with auto-incrementing item_id
 conn = sqlite3.connect("restaurant_inventory.db")
 cursor = conn.cursor()
 
@@ -23,8 +22,11 @@ print("Database created successfully.")
 
 class StockDatabase:
     def __init__(self, db_name="restaurant_inventory.db"):
-        self.conn = sqlite3.connect(db_name)
-        self.cursor = self.conn.cursor()
+        try:
+            self.conn = sqlite3.connect(db_name)
+            self.cursor = self.conn.cursor()
+        except sqlite3.Error as e:
+            raise Exception(f"Database connection error: {e}")
 
     def insert_entry(self, item_name, quantity_on_hand, reorder_level, supplier_info):
         self.cursor.execute("""
@@ -84,7 +86,10 @@ class StockDatabase:
 
 class InventoryController:
     def __init__(self):
-        self.db = StockDatabase()
+        try:
+            self.db = StockDatabase()
+        except Exception as e:
+            raise Exception(f"Controller initialization error: {e}")
 
     def add_new_stock_entry(self, item_name, quantity_on_hand, reorder_level, supplier_info):
         self.db.insert_entry(item_name, quantity_on_hand, reorder_level, supplier_info)
@@ -116,7 +121,7 @@ class InventoryUI:
 
     def create_widgets(self):
         # Main Menu 
-        # Create buttons and entry fields
+        # Creates buttons on main menu  
         self.add_button = tk.Button(self.root, text="Add New Entry", command=self.add_new_entry)
         self.add_button.pack()
 
