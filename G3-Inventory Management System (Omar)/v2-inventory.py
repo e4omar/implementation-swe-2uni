@@ -234,15 +234,52 @@ class InventoryUI:
         tk.Button(self.modify_window, text="Submit", command=self.submit_modify_entry).pack()
 
     def submit_modify_entry(self):
-        item_id = int(self.modify_item_id_entry.get())
+        item_id = self.modify_item_id_entry.get()
         item_name = self.modify_item_name_entry.get()
-        quantity_on_hand = int(self.modify_quantity_entry.get())
-        reorder_level = int(self.modify_reorder_entry.get())
+        quantity_on_hand = self.modify_quantity_entry.get()
+        reorder_level = self.modify_reorder_entry.get()
         supplier_info = self.modify_supplier_entry.get()
+
+        # Validate Item ID
+        if not item_id:
+            messagebox.showerror("Error", "Item ID must be provided.")
+            return
+
+        try:
+            item_id = int(item_id)
+        except ValueError:
+            messagebox.showerror("Error", "Item ID must be an integer.")
+            return
+
+        # Validate Quantity on Hand and Reorder Level if provided
+        if quantity_on_hand:
+            try:
+                quantity_on_hand = int(quantity_on_hand)
+            except ValueError:
+                messagebox.showerror("Error", "Quantity on Hand must be an integer.")
+                return
+        else:
+            quantity_on_hand = None
+
+        if reorder_level:
+            try:
+                reorder_level = int(reorder_level)
+            except ValueError:
+                messagebox.showerror("Error", "Reorder Level must be an integer.")
+                return
+        else:
+            reorder_level = None
+
+        if not item_name:
+            item_name = None
+
+        if not supplier_info:
+            supplier_info = None
 
         self.controller.modify_stock_entry(item_id, item_name, quantity_on_hand, reorder_level, supplier_info)
         messagebox.showinfo("Success", "Stock entry modified successfully!")
         self.modify_window.destroy()
+
 
     def delete_entry(self):
         self.delete_window = tk.Toplevel(self.root)
