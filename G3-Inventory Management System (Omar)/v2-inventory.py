@@ -114,28 +114,34 @@ class InventoryController:
 
 class InventoryUI:
     def __init__(self, root):
-        self.controller = InventoryController()
-        self.root = root
-        self.root.title("Restaurant Inventory Management")
-        self.create_widgets()
+        try:
+            self.controller = InventoryController()
+            self.root = root
+            self.root.title("Restaurant Inventory Management")
+            self.create_widgets()
+        except Exception as e:
+            messagebox.showerror("Error", f"Initialization error: {e}")
 
     def create_widgets(self):
-        # Main Menu 
-        # Creates buttons on main menu  
-        self.add_button = tk.Button(self.root, text="Add New Entry", command=self.add_new_entry)
-        self.add_button.pack()
+        try:
+            # Main Menu 
+            # Creates buttons on main menu  
+            self.add_button = tk.Button(self.root, text="Add New Entry", command=self.add_new_entry)
+            self.add_button.pack()
 
-        self.view_button = tk.Button(self.root, text="View Current Records", command=self.view_records)
-        self.view_button.pack()
+            self.view_button = tk.Button(self.root, text="View Current Records", command=self.view_records)
+            self.view_button.pack()
 
-        self.low_stock_button = tk.Button(self.root, text="Notify Low Stock", command=self.notify_low_stock)
-        self.low_stock_button.pack()
+            self.low_stock_button = tk.Button(self.root, text="Notify Low Stock", command=self.notify_low_stock)
+            self.low_stock_button.pack()
 
-        self.modify_button = tk.Button(self.root, text="Modify Stock Entry", command=self.modify_entry)
-        self.modify_button.pack()
+            self.modify_button = tk.Button(self.root, text="Modify Stock Entry", command=self.modify_entry)
+            self.modify_button.pack()
 
-        self.delete_button = tk.Button(self.root, text="Delete Stock Entry", command=self.delete_entry)
-        self.delete_button.pack()
+            self.delete_button = tk.Button(self.root, text="Delete Stock Entry", command=self.delete_entry)
+            self.delete_button.pack()
+        except Exception as e:
+            messagebox.showerror("Error", f"Error creating main menu widgets: {e}")
 
     def add_new_entry(self):
         # Creates a new window for adding a new entry
@@ -242,7 +248,11 @@ class InventoryUI:
         self.delete_window.destroy()
 
     def close(self):
-        self.controller.close()
+        try:
+            self.controller.close()
+        except Exception as e:
+            messagebox.showerror("Error", f"Error closing the application: {e}")
+
 
 def main():
     root = tk.Tk()
