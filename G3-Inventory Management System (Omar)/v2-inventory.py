@@ -255,7 +255,19 @@ class InventoryUI:
         tk.Button(self.delete_window, text="Submit", command=self.submit_delete_entry).pack()
 
     def submit_delete_entry(self):
-        item_id = int(self.delete_item_id_entry.get())
+        item_id = self.delete_item_id_entry.get()
+
+        # Validate input
+        if not item_id:
+            messagebox.showerror("Error", "Item ID must be provided.")
+            return
+
+        try:
+            item_id = int(item_id)
+        except ValueError:
+            messagebox.showerror("Error", "Item ID must be an integer.")
+            return
+
         self.controller.delete_stock_entry(item_id)
         messagebox.showinfo("Success", "Stock entry deleted successfully!")
         self.delete_window.destroy()
