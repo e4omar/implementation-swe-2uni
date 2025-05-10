@@ -107,7 +107,9 @@ class ClientHandler:
                         print(f"[DISCONNECT] {self.addr} disconnected")
                     else: 
                         print(f"[{self.addr}] individual msg: {msg}")
-                        self.message_sender.send_message(self.conn, msg)
+                        #for tetsing 
+                        if msg == "Omar":
+                            self.message_sender.send_message(self.conn, "Order received")
 
             except (socket.error, ConnectionResetError) as e:
                 print(f"[ERROR] Client connection lost {self.addr}: {e}")
