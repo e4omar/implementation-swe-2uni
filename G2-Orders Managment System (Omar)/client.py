@@ -1,3 +1,4 @@
+import json
 import os
 import socket
 import threading
@@ -118,14 +119,13 @@ class Sender:
         self.message_sender = MessageSender(self.client.client_socket)
 
     def send(self, msg):
-        succcess = self.message_sender.send_message(msg)
+        success = self.message_sender.send_message(msg)
         if msg == DISCONNECT_MESSAGE:
-                    self.client.disconnect()
-        if not succcess:
+            self.client.disconnect()
+        if not success:
             print("[ERROR] Failed to send message.")
             print("[ERROR] Closing client connection...")
             self.client.disconnect()
-            
 
     def sending_thread(self):
         print("send function started")
@@ -134,17 +134,43 @@ class Sender:
                 msg = str(input("SEND A MSG: "))
                 self.send(msg)
                 
+                # Handle message options
+                if msg == "!1":  # Retrieve current orders
+                    #self.send(msg)
+                    pass
+                elif msg == "!2":  # Add new order
+                    table_num = input("Enter table number: ")
+                    items = input("Enter items: ")
+                    special_requests = input("Enter special requests: ")
+                    order_data = json.dumps({
+                        'table_num': table_num,
+                        'items': items,
+                        'special_requests': special_requests
+                    })
+                    self.send(order_data)
+                elif msg == "!3":  # Delete order
+                    order_id = input("Enter order ID to delete: ")
+                    delete_data = json.dumps({'order_id': order_id})
+                    self.send(delete_data)
+                elif msg == "!4":  # Update order progress
+                    order_id = input("Enter order ID to update: ")
+                    status = input("Enter new status: ")
+                    update_data = json.dumps({'order_id': order_id, 'status': status})
+                    self.send(update_data)
+
             except Exception as e:
-                print(f"[ERROR] Unexpected error in sending_thread) function: {e}")
+                print(f"[ERROR] Unexpected error in sending_thread function: {e}")
                 self.client.disconnect()
                 break
 
         print("send function terminated")
 
+
 class Receiver:
     def __init__(self, client):
         self.client = client
         self.message_sender = MessageSender(self.client.client_socket)
+
     def receive(self):
         full_msg = self.message_sender.recv_message()
         if full_msg:
@@ -157,15 +183,19 @@ class Receiver:
 
         return full_msg
 
-
     def receiving_thread(self):
         print("recv function started")
         while self.client.online:
             full_msg = self.message_sender.recv_message()
             print(f"RECEIVED: {full_msg}")
-            
 
         print("recv function terminated")
+
+
+if __name__ == "__main__":
+    client = Client(ADDR)
+    client.start()
+
 
 
 if __name__ == "__main__":

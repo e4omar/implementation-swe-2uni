@@ -161,10 +161,10 @@ class ClientHandler:
         print(f"[ACTIVE CONNECTIONS] After Client Disconnect {threading.active_count() - 1}")
 
     def message_options(self, msg):
-        if msg == "!1": # Both: Retrieve current orders
+        if msg == "!1": #++ Both: Retrieve current orders
             current_orders = self.order_management.retrieve_current_orders()
             self.message_sender.send_message(self.conn, json.dumps(current_orders))
-        elif msg == "!2": # Waitstaff: Add new order
+        elif msg == "!2": #++ Waitstaff: Add new order
             json_message = self.receive()
             data = json.loads(json_message)
             table_num = data['table_num']
