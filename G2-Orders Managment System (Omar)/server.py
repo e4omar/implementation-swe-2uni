@@ -18,15 +18,33 @@ def calculate_checksum(message):
 
 
 class MessageSender:
-    def __init__(self):
-        pass
+    def __init__(self, client_socket=None):
+        self.conn = client_socket
 
     def send_message(self, client_socket, message):
         message += "[END]"  # Add delimiter to help client find message end
         checksum = calculate_checksum(message)
         full_message = f"{message}::{checksum}"
         client_socket.send(full_message.encode(FORMAT))
-
+    
+    def recv_message(self):
+        try:
+            msg_length = self.conn.recv(HEADER).decode(FORMAT)  # recv the msg_length
+            if msg_length:
+                msg_length = int(msg_length)
+                msg = self.conn.recv(msg_length).decode(FORMAT)  # recv actual msg
+                checksum = int(self.conn.recv(HEADER).decode(FORMAT))  # HEADER recv not msg_length
+                if calculate_checksum(msg) == checksum:
+                    return msg
+                else:
+                    print(f"[ERROR] Checksum mismatch from {self.addr}")
+                    return None
+            else:
+                print(f"[ERROR] No message length received from {self.addr}")
+                return None
+        except (socket.error, ConnectionResetError) as e:
+            print(f"[ERROR] Client connection lost {self.addr}: {e}")
+            return False
 
 
 
@@ -56,8 +74,6 @@ class Server:
 
 
     def client_disconnect(self, conn, addr):
-        self.add_msg_history(addr, "DISCONNECTED")
-        self.notify_clients(conn, connected=False)
         try:
             self.client_sockets.remove(conn)
         except ValueError as e:
@@ -71,7 +87,7 @@ class ClientHandler:
         self.conn = conn
         self.addr = addr
         self.server = server
-        #self.message_sender = MessageSender()
+        self.message_sender = MessageSender(conn)
 
 
     def handle(self):
@@ -79,22 +95,18 @@ class ClientHandler:
         connected = True
         while connected:
             try:
-                msg_length = self.conn.recv(HEADER).decode(FORMAT)  # recv the msg_length
-                if msg_length:
-                    msg_length = int(msg_length)
-                    msg = self.conn.recv(msg_length).decode(FORMAT)  # recv actual msg
-                    checksum = int(self.conn.recv(HEADER).decode(FORMAT))  # HEADER recv not msg_length
-                    if calculate_checksum(msg) == checksum:
-                        print("YO 1")
+                msg = self.message_sender.recv_message()
+                if msg == False:
+                    print(f"[ERROR] Client connection lost {self.addr}: {e}")
+                    connected = False
+                    self.server.client_disconnect(self.conn, self.addr)
+                if msg:
+                    if msg == DISCONNECT_MESSAGE:   
+                        connected = False
+                        self.server.client_disconnect(self.conn, self.addr)
+                        print(f"[DISCONNECT] {self.addr} disconnected")
+                    else: 
                         print(f"[{self.addr}] individual msg: {msg}")
-                        if msg == DISCONNECT_MESSAGE:
-                            connected = False
-                            self.server.client_disconnect(self.conn, self.addr)
-                        elif not self.client_selfish(msg):
-                            self.server.add_msg_history(self.addr, msg)
-                            self.server.notify_clients(self.conn)
-                    else:
-                        print(f"[ERROR] Checksum mismatch from {self.addr}")
 
             except (socket.error, ConnectionResetError) as e:
                 print(f"[ERROR] Client connection lost {self.addr}: {e}")
