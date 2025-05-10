@@ -28,23 +28,35 @@ class MessageSender:
         client_socket.send(full_message.encode(FORMAT))
     
     def recv_message(self):
+        full_msg = ''
         try:
-            msg_length = self.conn.recv(HEADER).decode(FORMAT)  # recv the msg_length
-            if msg_length:
-                msg_length = int(msg_length)
-                msg = self.conn.recv(msg_length).decode(FORMAT)  # recv actual msg
-                checksum = int(self.conn.recv(HEADER).decode(FORMAT))  # HEADER recv not msg_length
-                if calculate_checksum(msg) == checksum:
-                    return msg
+            while True:
+                part = self.conn.recv(1024).decode(FORMAT)
+                full_msg += part
+                if "[END]" in full_msg:
+                    break
+
+            if "::" in full_msg:
+                message_part, checksum_part = full_msg.rsplit("::", 1) #split into msg and checksum
+                message = message_part.replace("[END]", "")
+                checksum = int(checksum_part.strip())
+
+                if calculate_checksum(message_part) == checksum:
+                    return message
                 else:
-                    print(f"[ERROR] Checksum mismatch from {self.addr}")
+                    print("[ERROR] Checksum mismatch from Server")
                     return None
             else:
-                print(f"[ERROR] No message length received from {self.addr}")
+                print("[ERROR] Message format incorrect, no checksum found")
                 return None
+            
         except (socket.error, ConnectionResetError) as e:
-            print(f"[ERROR] Client connection lost {self.addr}: {e}")
+            print(f"[ERROR] Error receiving message: {e}")
             return False
+        except Exception as e:
+            print(f"[ERROR] Unexpected error in receive function: {e}")
+            return False
+
 
 
 class Client:
@@ -73,8 +85,8 @@ class Client:
             sender = Sender(self)
             receiver = Receiver(self)
 
-            send_thread = threading.Thread(target=sender.send_messages)
-            recv_thread = threading.Thread(target=receiver.receive_messages)
+            send_thread = threading.Thread(target=sender.sending_thread)
+            recv_thread = threading.Thread(target=receiver.receiving_thread)
 
             send_thread.start()
             recv_thread.start()
@@ -110,7 +122,7 @@ class Sender:
             print(f"[ERROR] Unexpected error in send function: {e}")
             self.client.online = False
 
-    def send_messages(self):
+    def sending_thread(self):
         print("send function started")
         while self.client.online:
             try:
@@ -120,7 +132,7 @@ class Sender:
                     self.client.online = False
                     os._exit(0)  # Exit the program
             except Exception as e:
-                print(f"[ERROR] Unexpected error in send_messages function: {e}")
+                print(f"[ERROR] Unexpected error in sending_thread) function: {e}")
                 self.client.online = False
 
         print("send function terminated")
@@ -128,6 +140,7 @@ class Sender:
 class Receiver:
     def __init__(self, client):
         self.client = client
+        self.message_sender = MessageSender(self.client.client_socket)
 
     def receive(self):
         full_msg = ''
@@ -161,12 +174,19 @@ class Receiver:
             self.client.online = False
             return None
 
-    def receive_messages(self):
+    def receiving_thread(self):
         print("recv function started")
         while self.client.online:
-            full_msg = self.receive()
+            full_msg = self.message_sender.recv_message()
             if full_msg:
-                print("[RECEIVED] ", full_msg)
+                if full_msg == DISCONNECT_MESSAGE:
+                    self.client.online = False
+                    os._exit(0)
+                elif full_msg is False:
+                    self.client.online = False
+                    break
+                print(f"RECEIVED: {full_msg}")
+            
 
         print("recv function terminated")
 

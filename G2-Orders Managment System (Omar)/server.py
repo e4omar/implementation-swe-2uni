@@ -107,6 +107,7 @@ class ClientHandler:
                         print(f"[DISCONNECT] {self.addr} disconnected")
                     else: 
                         print(f"[{self.addr}] individual msg: {msg}")
+                        self.message_sender.send_message(self.conn, msg)
 
             except (socket.error, ConnectionResetError) as e:
                 print(f"[ERROR] Client connection lost {self.addr}: {e}")
