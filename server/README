@@ -1,0 +1,38 @@
+## ✅ Features
+
+- Staff Login
+- Submit time-off and shift-change requests
+- View assigned schedules
+- Manager Login
+- Create schedules
+- View and approve/reject requests
+- Notification system
+- GUI interface using `Tkinter`
+
+
+## 🛠️ Setup Instructions
+
+1. **Install Python 3.10+**
+
+2. **Install dependencies**
+
+This project uses only standard Python libraries (no pip installs required). Just ensure `sqlite3` is available (included with Python).
+
+3. **Initialize the database**
+
+```bash
+python db_init.py
+python seed_data.py
+python seed_shifts.py
+
+python client/gui_main.py (CLIENT)
+
+Use the following demo login credentials:
+
+Staff:
+Username: alice
+Password: pass123
+
+Manager:
+Username: bob
+Password: admin456
