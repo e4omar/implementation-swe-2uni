@@ -161,10 +161,10 @@ class ClientHandler:
         print(f"[ACTIVE CONNECTIONS] After Client Disconnect {threading.active_count() - 1}")
 
     def message_options(self, msg):
-        if msg == "!1": #++ Both: Retrieve current orders
+        if msg == "!1": # Both: Retrieve current orders
             current_orders = self.order_management.retrieve_current_orders()
             self.message_sender.send_message(self.conn, json.dumps(current_orders))
-        elif msg == "!2": #++ Waitstaff: Add new order
+        elif msg == "!2": # Waitstaff: Add new order
             json_message = self.receive()
             data = json.loads(json_message)
             table_num = data['table_num']
@@ -175,13 +175,13 @@ class ClientHandler:
         elif msg == "!3": # Waitstaff: Delete order
             json_message = self.receive()
             data = json.loads(json_message)
-            order_id = data['order_id']
+            order_id = int(data['order_id'])
             self.order_management.delete_order(order_id)
             self.message_sender.send_message(self.conn, f"Order ID {order_id} deleted successfully.")
         elif msg == "!4": # Kitchen: Update order progress
             json_message = self.receive()
             data = json.loads(json_message)
-            order_id = data['order_id']
+            order_id = int(data['order_id'])
             new_progress = data['status']
             self.order_management.update_order_progress(order_id, new_progress)
             self.message_sender.send_message(self.conn, f"Order ID {order_id} updated to {new_progress}.")
