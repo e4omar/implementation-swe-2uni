@@ -51,6 +51,12 @@ class OrderManagement:
         self.id_counter = 0  
 
     def add_new_order(self, table_num, items, special_requests):
+        try:
+            table_num = int(table_num)
+        except ValueError:
+            print(f"[ERROR] OrderManagement add_new_order table number not int")
+            return None
+        
         order_id = self.id_counter + 1
         self.id_counter += 1
         

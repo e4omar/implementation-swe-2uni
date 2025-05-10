@@ -132,31 +132,20 @@ class Sender:
         while self.client.online:
             try:
                 msg = str(input("SEND A MSG: "))
-                self.send(msg)
-                
-                # Handle message options
-                if msg == "!1":  # Retrieve current orders
-                    #self.send(msg)
-                    pass
-                elif msg == "!2":  # Add new order
-                    table_num = input("Enter table number: ")
-                    items = input("Enter items: ")
-                    special_requests = input("Enter special requests: ")
-                    order_data = json.dumps({
-                        'table_num': table_num,
-                        'items': items,
-                        'special_requests': special_requests
-                    })
-                    self.send(order_data)
-                elif msg == "!3":  # Delete order
-                    order_id = input("Enter order ID to delete: ")
-                    delete_data = json.dumps({'order_id': order_id})
-                    self.send(delete_data)
-                elif msg == "!4":  # Update order progress
-                    order_id = input("Enter order ID to update: ")
-                    status = input("Enter new status: ")
-                    update_data = json.dumps({'order_id': order_id, 'status': status})
-                    self.send(update_data)
+
+                if msg == DISCONNECT_MESSAGE:
+                    self.client.disconnect()
+                    break
+                elif msg == "!":  # Display options
+                    print("Options:")
+                    print("!1 - Retrieve current orders")
+                    print("!2 - Add new order")
+                    print("!3 - Delete order")
+                    print("!4 - Update order progress")
+                    print("! - Display options")
+                    print("!DIS - Disconnect")
+                else:
+                    self.prccoess_options(msg)
 
             except Exception as e:
                 print(f"[ERROR] Unexpected error in sending_thread function: {e}")
@@ -165,6 +154,56 @@ class Sender:
 
         print("send function terminated")
 
+    def prccoess_options(self, msg):
+        if msg == "!1":  # Retrieve current orders
+            self.send(msg)
+
+        elif msg == "!2":  # Add new order
+            self.send(msg)
+            while True:
+                table_num = input("Enter table number: ")
+                if table_num.isdigit():
+                    table_num = int(table_num)
+                    break
+                else:
+                    print("Invalid input. Please enter a valid table number.")
+
+            items = input("Enter items: ")
+            special_requests = input("Enter special requests: ")
+
+            order_data = json.dumps({
+                'table_num': table_num,
+                'items': items,
+                'special_requests': special_requests
+            })
+            self.send(order_data)
+            
+        elif msg == "!3":  # Delete order
+            self.send(msg)
+            while True:
+                order_id = input("Enter order ID to delete: ")
+                if order_id.isdigit():
+                    order_id = int(order_id)
+                    break
+                else:
+                    print("Invalid input. Please enter a valid order ID.")
+            delete_data = json.dumps({'order_id': order_id})
+            self.send(delete_data)
+        elif msg == "!4":  # Update order progress
+            self.send(msg)
+            while True:
+                order_id = input("Enter order ID to update: ")
+                if order_id.isdigit():
+                    order_id = int(order_id)
+                    break
+                else:
+                    print("Invalid input. Please enter a valid order ID.")
+
+            status = input("Enter new status: ")
+            update_data = json.dumps({'order_id': order_id, 'status': status})
+            self.send(update_data)
+        else:   ## Any other message
+            self.send(msg)
 
 class Receiver:
     def __init__(self, client):
