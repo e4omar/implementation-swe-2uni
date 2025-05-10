@@ -54,25 +54,6 @@ class Server:
                 print(f"[ERROR] Error accepting client connections: {e}")
                 break
 
-    def add_msg_history(self, addr, msg):
-        self.msg_history.append((addr, msg))
-
-    def notify_clients(self, avoid_socket, connected=True):
-        print(f"[NOTIFYING] all clients")
-        if connected:
-            for socket in self.client_sockets:
-                if socket != avoid_socket:
-                    try:
-                        self.message_sender.send_message(socket, f"[{self.msg_history[-1][0]}] sent: {self.msg_history[-1][1]}")
-                    except socket.error as e:
-                        print(f"[ERROR] Error notifying clients: {e}")
-        else:  # Telling other user disconnected
-            for socket in self.client_sockets:
-                if socket != avoid_socket:
-                    try:
-                        self.message_sender.send_message(socket, f"[{self.msg_history[-1][0]}] {self.msg_history[-1][1]}")
-                    except socket.error as e:
-                        print(f"[ERROR] Error notifying clients: {e}")
 
     def client_disconnect(self, conn, addr):
         self.add_msg_history(addr, "DISCONNECTED")
@@ -128,20 +109,6 @@ class ClientHandler:
         self.conn.close()
         print(f"[ACTIVE CONNECTIONS] After Client Disconnect {threading.active_count() - 1}")
 
-    def client_selfish(self, msg):
-        if msg == "!HIS":
-            try:
-                self.server.message_sender.send_message(self.conn, "\nHistory: ")
-                for history in self.server.msg_history:
-                    time.sleep(0.01) ##Without this probelems occur
-                    self.server.message_sender.send_message(self.conn, f"[{history[0]}] sent: {history[1]}")
-                print("\n")
-            except socket.error as e:
-                print(f"[ERROR] Error sending history to client {self.addr}: {e}")
-            print("YES 4 TRUE END")
-            return True
-        print("YES 5 False END")
-        return False
 
 
 if __name__ == "__main__":
