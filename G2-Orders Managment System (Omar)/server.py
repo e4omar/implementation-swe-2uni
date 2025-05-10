@@ -1,3 +1,4 @@
+import json
 import socket
 import threading
 import time
@@ -113,12 +114,13 @@ class ClientHandler:
         self.addr = addr
         self.server = server
         self.connected = True
+        self.order_management = OrderManagement()
         self.message_sender = MessageSender(conn)
 
     def receive(self):
         msg = self.message_sender.recv_message()
         if msg == False:
-            print(f"[ERROR] Client connection lost {self.addr}: {e}")
+            print(f"[ERROR] Client connection lost {self.addr}")
             self.connected = False
             self.server.client_disconnect(self.conn, self.addr)
         if msg:
@@ -139,6 +141,7 @@ class ClientHandler:
                 msg = self.receive()
                 if msg == False:
                     break
+                self.message_options(msg)
                 print(f"[{self.addr}] individual msg: {msg}")
                 #for tetsing 
                 if msg == "Omar":
@@ -157,6 +160,31 @@ class ClientHandler:
         self.conn.close()
         print(f"[ACTIVE CONNECTIONS] After Client Disconnect {threading.active_count() - 1}")
 
+    def message_options(self, msg):
+        if msg == "!1": # Both: Retrieve current orders
+            current_orders = self.order_management.retrieve_current_orders()
+            self.message_sender.send_message(self.conn, json.dumps(current_orders))
+        elif msg == "!2": # Waitstaff: Add new order
+            json_message = self.receive()
+            data = json.loads(json_message)
+            table_num = data['table_num']
+            items = data['items']
+            special_requests = data['special_requests']
+            order_id = self.order_management.add_new_order(table_num, items, special_requests)
+            self.message_sender.send_message(self.conn, f"Order ID {order_id} added successfully.")
+        elif msg == "!3": # Waitstaff: Delete order
+            json_message = self.receive()
+            data = json.loads(json_message)
+            order_id = data['order_id']
+            self.order_management.delete_order(order_id)
+            self.message_sender.send_message(self.conn, f"Order ID {order_id} deleted successfully.")
+        elif msg == "!4": # Kitchen: Update order progress
+            json_message = self.receive()
+            data = json.loads(json_message)
+            order_id = data['order_id']
+            new_progress = data['status']
+            self.order_management.update_order_progress(order_id, new_progress)
+            self.message_sender.send_message(self.conn, f"Order ID {order_id} updated to {new_progress}.")
 
 
 if __name__ == "__main__":
