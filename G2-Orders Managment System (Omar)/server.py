@@ -9,13 +9,11 @@ ADDR = (SERVER, PORT)  # (IP, PORT)
 FORMAT = "utf-8"
 DISCONNECT_MESSAGE = "!DIS"
 
-
 def calculate_checksum(message):
     checksum = 0
     for x in message:
         checksum ^= ord(x)
     return checksum
-
 
 class MessageSender:
     def __init__(self, client_socket=None):
@@ -46,6 +44,35 @@ class MessageSender:
             print(f"[ERROR] Client connection lost {self.addr}: {e}")
             return False
 
+class OrderManagement:
+    def __init__(self):
+        self.orders_dict = {}
+        self.id_counter = 0  
+
+    def add_new_order(self, table_num, items, special_requests):
+        order_id = self.id_counter + 1
+        self.id_counter += 1
+        
+        self.orders_dict[order_id] = {
+            'table_num': table_num,
+            'items': items,
+            'special_req': special_requests,
+            'status': 'New'    # New-> In Progress-> Ready
+        }
+        return order_id
+
+    def retrieve_current_orders(self):
+        return self.orders_dict
+
+    def update_order_progress(self, order_id, new_progress):
+        if order_id in self.orders_dict:
+            self.orders_dict[order_id]['status'] = new_progress
+
+    def delete_order(self, order_id):
+        if order_id in self.orders_dict:
+            del self.orders_dict[order_id]
+
+
 
 
 class Server:
@@ -54,7 +81,6 @@ class Server:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind(self.addr)
         self.client_sockets = []
-        self.msg_history = []
         self.message_sender = MessageSender()
 
     def start(self):
@@ -67,7 +93,6 @@ class Server:
                 thread = threading.Thread(target=client_handler.handle)
                 thread.start()
                 self.client_sockets.append(conn)
-                print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
             except socket.error as e:
                 print(f"[ERROR] Error accepting client connections: {e}")
                 break
@@ -87,38 +112,46 @@ class ClientHandler:
         self.conn = conn
         self.addr = addr
         self.server = server
+        self.connected = True
         self.message_sender = MessageSender(conn)
 
-
+    def receive(self):
+        msg = self.message_sender.recv_message()
+        if msg == False:
+            print(f"[ERROR] Client connection lost {self.addr}: {e}")
+            self.connected = False
+            self.server.client_disconnect(self.conn, self.addr)
+        if msg:
+            if msg == DISCONNECT_MESSAGE:   
+                self.connected = False
+                self.server.client_disconnect(self.conn, self.addr)
+                print(f"[DISCONNECT] {self.addr} disconnected")
+            else: 
+                return msg
+            
+        return False
+            
+    
     def handle(self):
         print(f"[NEW CONNECTION] {self.addr} connected")
-        connected = True
-        while connected:
+        while self.connected:
             try:
-                msg = self.message_sender.recv_message()
+                msg = self.receive()
                 if msg == False:
-                    print(f"[ERROR] Client connection lost {self.addr}: {e}")
-                    connected = False
-                    self.server.client_disconnect(self.conn, self.addr)
-                if msg:
-                    if msg == DISCONNECT_MESSAGE:   
-                        connected = False
-                        self.server.client_disconnect(self.conn, self.addr)
-                        print(f"[DISCONNECT] {self.addr} disconnected")
-                    else: 
-                        print(f"[{self.addr}] individual msg: {msg}")
-                        #for tetsing 
-                        if msg == "Omar":
-                            self.message_sender.send_message(self.conn, "Order received")
+                    break
+                print(f"[{self.addr}] individual msg: {msg}")
+                #for tetsing 
+                if msg == "Omar":
+                    self.message_sender.send_message(self.conn, "Order received")
 
             except (socket.error, ConnectionResetError) as e:
                 print(f"[ERROR] Client connection lost {self.addr}: {e}")
-                connected = False
+                self.connected = False
                 self.server.client_disconnect(self.conn, self.addr)
 
             except Exception as e:
                 print(f"[ERROR] Unexpected error in client handling: {e}")
-                connected = False
+                self.connected = False
                 self.server.client_disconnect(self.conn, self.addr)
 
         self.conn.close()
