@@ -3,6 +3,7 @@ import os
 import socket
 import threading
 import tkinter as tk
+from tkinter import messagebox
 import threading
 import time
 
@@ -229,7 +230,14 @@ class WaitstaffUI(UI):
         self.send("!2")
         self.send(order_data)
         replay_msg = self.receive()
-        print(f"[add_order]: {replay_msg}")
+        
+        if replay_msg.startswith("T:"):
+            order_id = replay_msg[2:]
+            tk.messagebox.showinfo("Order Confirmation", f"Order ID {order_id} added successfully.")
+        else:
+            tk.messagebox.showerror("Order Error", "Failed to add order.")
+        
+
 
     def delete_order(self):
         order_id = self.delete_order_id_entry.get()

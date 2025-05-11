@@ -174,7 +174,7 @@ class ClientHandler:
             items = data['items']
             special_requests = data['special_requests']
             order_id = self.order_management.add_new_order(table_num, items, special_requests)
-            self.message_sender.send_message(self.conn, f"Order ID {order_id} added successfully.")
+            self.message_sender.send_message(self.conn, f"T:{order_id}")
             ##### Testing
             print(F"[Current orders]: {self.order_management.retrieve_current_orders()}")
         elif msg == "!3": # Waitstaff: Delete order
@@ -182,14 +182,14 @@ class ClientHandler:
             data = json.loads(json_message)
             order_id = int(data['order_id'])
             self.order_management.delete_order(order_id)
-            self.message_sender.send_message(self.conn, f"Order ID {order_id} deleted successfully.")
+            self.message_sender.send_message(self.conn, f"T:Order ID {order_id} deleted successfully.")
         elif msg == "!4": # Kitchen: Update order progress
             json_message = self.receive()
             data = json.loads(json_message)
             order_id = int(data['order_id'])
             new_progress = data['status']
             self.order_management.update_order_progress(order_id, new_progress)
-            self.message_sender.send_message(self.conn, f"Order ID {order_id} updated to {new_progress}.")
+            self.message_sender.send_message(self.conn, f"T:Order ID {order_id} updated to {new_progress}.")
 
         else: 
             print(f"[{self.addr}] not 4 options. msg: {msg}")
