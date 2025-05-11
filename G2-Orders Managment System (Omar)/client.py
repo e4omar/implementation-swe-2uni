@@ -76,6 +76,8 @@ class MessageSender:
             print(f"[ERROR] Unexpected error in receive function: {e}")
             return False
 
+
+
 class Client:
     def __init__(self, server_addr):
         self.server_addr = server_addr
@@ -101,7 +103,16 @@ class Client:
 
     def start(self):
         if self.online:
-            ui_class = UI(self)
+            user_type = input("Enter 1 for waitstaff or 2 for kitchen staff: ")
+
+            while user_type not in ["1", "2"]:
+                print("Invalid input. Please enter 1 for waitstaff or 2 for kitchen staff.")
+                user_type = input("Enter 1 for waitstaff or 2 for kitchen staff: ")
+
+            if user_type == "1":
+                ui_class = WaitstaffUI(self)
+            elif user_type == "2":
+                ui_class = KitchenStaffUI(self)
 
 class UI:
     def __init__(self, client):
@@ -114,53 +125,8 @@ class UI:
         self.root.mainloop()
 
     def create_widgets(self):
-        self.orders_text = tk.Text(self.root, height=15, width=50)
+        self.orders_text = tk.Text(self.root, height=30, width=100)
         self.orders_text.pack()
-
-        # Add orders section
-        self.add_order_frame = tk.Frame(self.root)
-        self.add_order_frame.pack()
-
-        tk.Label(self.add_order_frame, text="Table Number:").grid(row=0, column=0)
-        self.table_num_entry = tk.Entry(self.add_order_frame)
-        self.table_num_entry.grid(row=0, column=1)
-
-        tk.Label(self.add_order_frame, text="Items:").grid(row=1, column=0)
-        self.items_entry = tk.Entry(self.add_order_frame)
-        self.items_entry.grid(row=1, column=1)
-
-        tk.Label(self.add_order_frame, text="Special Requests:").grid(row=2, column=0)
-        self.special_requests_entry = tk.Entry(self.add_order_frame)
-        self.special_requests_entry.grid(row=2, column=1)
-        
-        self.add_order_button = tk.Button(self.add_order_frame, text="Add Order", command=self.add_order)
-        self.add_order_button.grid(row=3, columnspan=2)
-
-        # Update orders section
-        self.update_order_frame = tk.Frame(self.root)
-        self.update_order_frame.pack()
-
-        tk.Label(self.update_order_frame, text="Order ID:").grid(row=0, column=0)
-        self.update_order_id_entry = tk.Entry(self.update_order_frame)
-        self.update_order_id_entry.grid(row=0, column=1)
-
-        tk.Label(self.update_order_frame, text="New Status:").grid(row=1, column=0)
-        self.update_status_entry = tk.Entry(self.update_order_frame)
-        self.update_status_entry.grid(row=1, column=1)
-
-        self.update_order_button = tk.Button(self.update_order_frame, text="Update Order", command=self.update_order)
-        self.update_order_button.grid(row=2, columnspan=2)
-
-        # Delete orders section
-        self.delete_order_frame = tk.Frame(self.root)
-        self.delete_order_frame.pack()
-
-        tk.Label(self.delete_order_frame, text="Order ID:").grid(row=0, column=0)
-        self.delete_order_id_entry = tk.Entry(self.delete_order_frame)
-        self.delete_order_id_entry.grid(row=0, column=1)
-
-        self.delete_order_button = tk.Button(self.delete_order_frame, text="Delete Order", command=self.delete_order)
-        self.delete_order_button.grid(row=1, columnspan=2)
 
     def update_orders(self):
         if self.client.online:
@@ -184,64 +150,6 @@ class UI:
                 except Exception as e:
                     self.orders_text.insert(tk.END, f"Error parsing orders: {e}\nRaw: {response}\n")
             self.root.after(5000, self.update_orders)
-            
-    def add_order(self):
-        table_num = self.table_num_entry.get()
-        items = self.items_entry.get()
-        special_requests = self.special_requests_entry.get()
-        order_data = json.dumps({
-            'table_num': table_num,
-            'items': items,
-            'special_requests': special_requests
-        })
-        self.send("!2")
-        self.send(order_data)
-        replay_msg = self.receive()
-        print(f"[add_order]: {replay_msg}")
-
-    def update_order(self):
-        order_id = self.update_order_id_entry.get()
-        status = self.update_status_entry.get()
-        update_data = json.dumps({'order_id': order_id, 'status': status})
-        self.send("!4")
-        self.send(update_data)
-        replay_msg = self.receive()
-        print(f"[update_order]: {replay_msg}")
-
-    def delete_order(self):
-        order_id = self.delete_order_id_entry.get()
-        delete_data = json.dumps({'order_id': order_id})
-        self.send("!3")
-        self.send(delete_data)
-        replay_msg = self.receive()
-        print(f"[delete_order]: {replay_msg}")
-
-    def main_thread(self):
-        while self.client.online:
-            try:
-                msg = str(input("SEND A MSG: "))
-                self.client.client_socket.sendall(msg.encode())
-                if msg == DISCONNECT_MESSAGE:
-                    self.client.disconnect()
-                    break
-            except Exception as e:
-                print(f"[ERROR] Unexpected error in sending_thread function: {e}")
-                self.client.disconnect()
-                break
-
-    def receiving_thread(self):
-        while self.client.online:
-            try:
-                full_msg = self.client.client_socket.recv(4096).decode()
-                if full_msg:
-                    print(f"RECEIVED: {full_msg}")
-                    if full_msg == DISCONNECT_MESSAGE:
-                        self.client.disconnect()
-                        break
-            except Exception as e:
-                print(f"[ERROR] Unexpected error in receiving_thread function: {e}")
-                self.client.disconnect()
-                break
 
     def send(self, msg):
         success = self.message_sender.send_message(msg)
@@ -261,10 +169,85 @@ class UI:
                 self.client.disconnect()
             else:
                 return full_msg
-                #print(f"[receieve func bfore returning ]RECEIVED: {full_msg}")
 
+class WaitstaffUI(UI):
+    def create_widgets(self):
+        super().create_widgets()
+        self.add_order_frame = tk.Frame(self.root)
+        self.add_order_frame.pack()
+
+        tk.Label(self.add_order_frame, text="Table Number:").grid(row=0, column=0)
+        self.table_num_entry = tk.Entry(self.add_order_frame)
+        self.table_num_entry.grid(row=0, column=1)
+
+        tk.Label(self.add_order_frame, text="Items:").grid(row=1, column=0)
+        self.items_entry = tk.Entry(self.add_order_frame)
+        self.items_entry.grid(row=1, column=1)
+
+        tk.Label(self.add_order_frame, text="Special Requests:").grid(row=2, column=0)
+        self.special_requests_entry = tk.Entry(self.add_order_frame)
+        self.special_requests_entry.grid(row=2, column=1)
         
+        self.add_order_button = tk.Button(self.add_order_frame, text="Add Order", command=self.add_order)
+        self.add_order_button.grid(row=3, columnspan=2)
+
+        self.delete_order_frame = tk.Frame(self.root)
+        self.delete_order_frame.pack()
+
+        tk.Label(self.delete_order_frame, text="Order ID:").grid(row=0, column=0)
+        self.delete_order_id_entry = tk.Entry(self.delete_order_frame)
+        self.delete_order_id_entry.grid(row=0, column=1)
+
+        self.delete_order_button = tk.Button(self.delete_order_frame, text="Delete Order", command=self.delete_order)
+        self.delete_order_button.grid(row=1, columnspan=2)
+
+    def add_order(self):
+        table_num = self.table_num_entry.get()
+        items = self.items_entry.get()
+        special_requests = self.special_requests_entry.get()
+        order_data = json.dumps({
+            'table_num': table_num,
+            'items': items,
+            'special_requests': special_requests
+        })
+        self.send("!2")
+        self.send(order_data)
+        replay_msg = self.receive()
+        print(f"[add_order]: {replay_msg}")
+
+    def delete_order(self):
+        order_id = self.delete_order_id_entry.get()
+        delete_data = json.dumps({'order_id': order_id})
+        self.send("!3")
+        self.send(delete_data)
+        replay_msg = self.receive()
+        print(f"[delete_order]: {replay_msg}")
+
+class KitchenStaffUI(UI):
+    def create_widgets(self):
+        super().create_widgets()
+        self.update_order_frame = tk.Frame(self.root)
+        self.update_order_frame.pack()
+
+        tk.Label(self.update_order_frame, text="Order ID:").grid(row=0, column=0)
+        self.update_order_id_entry = tk.Entry(self.update_order_frame)
+        self.update_order_id_entry.grid(row=0, column=1)
+
+        tk.Label(self.update_order_frame, text="New Status:").grid(row=1, column=0)
+        self.update_status_entry = tk.Entry(self.update_order_frame)
+        self.update_status_entry.grid(row=1, column=1)
+
+        self.update_order_button = tk.Button(self.update_order_frame, text="Update Order", command=self.update_order)
+        self.update_order_button.grid(row=2, columnspan=2)
+
+    def update_order(self):
+        order_id = self.update_order_id_entry.get()
+        status = self.update_status_entry.get()
+        update_data = json.dumps({'order_id': order_id, 'status': status})
+        self.send("!4")
+        self.send(update_data)
+        replay_msg = self.receive()
+        print(f"[update_order]: {replay_msg}")
 
 if __name__ == "__main__":
     client = Client(ADDR)
-
