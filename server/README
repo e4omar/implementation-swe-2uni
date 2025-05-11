@@ -1,0 +1,34 @@
+
+Feautres of this system:
+
+- Staff Login
+- Submit time-off and shift-change requests
+- View assigned schedules
+- Manager Login
+- Create schedules
+- View and approve/reject requests
+- Notification system
+- GUI interface using `Tkinter`
+
+1. Install Python 3.10+
+2. Initialise the database in **db_init.py**
+
+```bash
+python db_init.py
+python seed_data.py
+python seed_shifts.py
+
+
+- Below is the information to run the main programme
+
+python client/gui_main.py (CLIENT)
+
+Use the following demo login credentials:
+
+Staff:
+Username: alice
+Password: pass123
+
+Manager:
+Username: bob
+Password: admin456
