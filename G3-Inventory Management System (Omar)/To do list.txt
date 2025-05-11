@@ -1,3 +1,0 @@
-1Rename public and private methods
-
-2error checking for database inesertiona nd updating

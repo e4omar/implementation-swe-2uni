@@ -160,7 +160,7 @@ class InventoryUI:
             self.view_button = tk.Button(self.root, text="View Current Records", command=self.view_records)
             self.view_button.pack(pady=5)
 
-            self.low_stock_button = tk.Button(self.root, text="Notify Low Stock", command=self.notify_low_stock)
+            self.low_stock_button = tk.Button(self.root, text="Low Stock Records", command=self.notify_low_stock)
             self.low_stock_button.pack(pady=5)
 
             self.modify_button = tk.Button(self.root, text="Modify Stock Entry", command=self.modify_entry)
