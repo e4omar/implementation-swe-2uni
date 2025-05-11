@@ -47,8 +47,27 @@ class MessageSender:
 
 class OrderManagement:
 
-    orders_dict = {}
-    id_counter = 0  
+    orders_dict = {
+        1: {
+            "table_num": 5,
+            "items": "Burger x 3, Fries x 1",
+            "special_requests": "Extra ketchup",
+            "status": "New"
+        },
+        2: {
+            "table_num": 3,
+            "items": "Pazza x 2, Salad x 1",
+            "special_requests": "No onions",
+            "status": "In Progress"
+        },
+        3: {
+            "table_num": 8,
+            "items": "pasta x 7, Garlic Bread x 1",
+            "special_requests": "Gluten-free pasta",
+            "status": "**READY**"
+        }
+    }
+    id_counter = 3  # Start from 3 since we have 3 orders in the dict
     def __init__(self):
         pass
 
