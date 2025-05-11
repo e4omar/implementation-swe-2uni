@@ -163,17 +163,29 @@ class UI:
         self.delete_order_button.grid(row=1, columnspan=2)
 
     def update_orders(self):
-        return
         if self.client.online:
             self.send("!1")
             response = self.receive()
             if response:
-                orders = json.loads(response)
-                self.orders_text.delete(1.0, tk.END)
-                for order in orders:
-                    self.orders_text.insert(tk.END, f"Order ID: {order['order_id']}, Table: {order['table_num']}, Items: {order['items']}, Status: {order['status']}\n")
-            self.root.after(20000, self.update_orders)
-
+                try:
+                    orders = json.loads(response)
+                    print(f"Step 1")
+                    self.orders_text.delete(1.0, tk.END)
+                    if isinstance(orders, dict):
+                        for order_id, order in orders.items():
+                            table_num = order.get('table_num', 'N/A')
+                            items = order.get('items', 'N/A')
+                            status = order.get('status', 'N/A')
+                            self.orders_text.insert(
+                                tk.END,
+                                f"Order ID: {order_id}, Table: {table_num}, Items: {items}, Status: {status}\n"
+                            )
+                    else:
+                        self.orders_text.insert(tk.END, f"Unexpected data: {orders}\n")
+                except Exception as e:
+                    self.orders_text.insert(tk.END, f"Error parsing orders: {e}\nRaw: {response}\n")
+            self.root.after(10000, self.update_orders)
+            
     def add_order(self):
         table_num = self.table_num_entry.get()
         items = self.items_entry.get()
