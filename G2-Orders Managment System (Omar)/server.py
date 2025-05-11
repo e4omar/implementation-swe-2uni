@@ -47,7 +47,7 @@ class MessageSender:
 
 class OrderManagement:
     def __init__(self):
-        self.orders_dict = {}
+        OrderManagement.orders_dict = {}
         self.id_counter = 0  
 
     def add_new_order(self, table_num, items, special_requests):
@@ -60,7 +60,7 @@ class OrderManagement:
         order_id = self.id_counter + 1
         self.id_counter += 1
         
-        self.orders_dict[order_id] = {
+        OrderManagement.orders_dict[order_id] = {
             'table_num': table_num,
             'items': items,
             'special_req': special_requests,
@@ -69,15 +69,15 @@ class OrderManagement:
         return order_id
 
     def retrieve_current_orders(self):
-        return self.orders_dict
+        return OrderManagement.orders_dict
 
     def update_order_progress(self, order_id, new_progress):
         if order_id in self.orders_dict:
-            self.orders_dict[order_id]['status'] = new_progress
+            OrderManagement.orders_dict[order_id]['status'] = new_progress
 
     def delete_order(self, order_id):
         if order_id in self.orders_dict:
-            del self.orders_dict[order_id]
+            del OrderManagement.orders_dict[order_id]
 
 
 

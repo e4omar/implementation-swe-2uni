@@ -169,7 +169,6 @@ class UI:
             if response:
                 try:
                     orders = json.loads(response)
-                    print(f"Step 1")
                     self.orders_text.delete(1.0, tk.END)
                     if isinstance(orders, dict):
                         for order_id, order in orders.items():
@@ -184,7 +183,7 @@ class UI:
                         self.orders_text.insert(tk.END, f"Unexpected data: {orders}\n")
                 except Exception as e:
                     self.orders_text.insert(tk.END, f"Error parsing orders: {e}\nRaw: {response}\n")
-            self.root.after(10000, self.update_orders)
+            self.root.after(5000, self.update_orders)
             
     def add_order(self):
         table_num = self.table_num_entry.get()
@@ -261,9 +260,10 @@ class UI:
             elif full_msg is False:
                 self.client.disconnect()
             else:
-                print(f"[receieve func bfore returning ]RECEIVED: {full_msg}")
+                return full_msg
+                #print(f"[receieve func bfore returning ]RECEIVED: {full_msg}")
 
-        return full_msg
+        
 
 if __name__ == "__main__":
     client = Client(ADDR)
