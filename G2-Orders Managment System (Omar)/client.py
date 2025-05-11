@@ -186,7 +186,6 @@ class UI:
             else:
                 return full_msg
 
-
 class WaitstaffUI(UI):
     def create_widgets(self):
         super().create_widgets()
@@ -222,6 +221,18 @@ class WaitstaffUI(UI):
         table_num = self.table_num_entry.get()
         items = self.items_entry.get()
         special_requests = self.special_requests_entry.get()
+
+        # Error handling for blank fields and incorrect data types
+        if not table_num.isdigit():
+            tk.messagebox.showerror("Input Error", "Table Number must be an integer and not blank.")
+            return
+        if not items.strip():
+            tk.messagebox.showerror("Input Error", "Items must not be blank.")
+            return
+        if not special_requests.strip():
+            tk.messagebox.showerror("Input Error", "Special Requests must not be blank.")
+            return
+
         order_data = json.dumps({
             'table_num': table_num,
             'items': items,
@@ -238,9 +249,14 @@ class WaitstaffUI(UI):
             tk.messagebox.showerror("Order Error", "Failed to add order.")
         
 
-
     def delete_order(self):
         order_id = self.delete_order_id_entry.get()
+
+        # Error handling for blank fields and incorrect data types
+        if not order_id.isdigit():
+            tk.messagebox.showerror("Input Error", "Order ID must be an integer and not blank.")
+            return
+
         delete_data = json.dumps({'order_id': order_id})
         self.send("!3")
         self.send(delete_data)
@@ -248,12 +264,10 @@ class WaitstaffUI(UI):
 
         if replay_msg.startswith("T:"):
             tk.messagebox.showinfo("Delete Confirmation", f"Order ID {order_id} deleted successfully.")
-
         elif replay_msg.startswith("F:"):
             tk.messagebox.showerror("Delete Error", f"Delete Failed. Order {order_id} is not present.")
         else:
             tk.messagebox.showerror("Order Error", "Failed to delete order.")
-
 
 class KitchenStaffUI(UI):
     def create_widgets(self):
@@ -275,16 +289,28 @@ class KitchenStaffUI(UI):
     def update_order(self):
         order_id = self.update_order_id_entry.get()
         status = self.update_status_entry.get()
+
+        # Error handling for blank fields and incorrect data types
+        if not order_id.isdigit():
+            tk.messagebox.showerror("Input Error", "Order ID must be an integer and not blank.")
+            return
+        
+        if not status.strip():
+            tk.messagebox.showerror("Input Error", "Status must not be blank.")
+            return
+
         update_data = json.dumps({'order_id': order_id, 'status': status})
         self.send("!4")
         self.send(update_data)
         replay_msg = self.receive()
+        
         if replay_msg.startswith("T:"):
             tk.messagebox.showinfo("Order Update Confirmation", f"Order ID {order_id} status updated successfully.")
         elif replay_msg.startswith("F:"):
             tk.messagebox.showerror("Order Update Error", f"Update Failed. Order {order_id} is not present.")
         else:
             tk.messagebox.showerror("Order Update Error", "Failed to update order.")
+
 
 if __name__ == "__main__":
     client = Client(ADDR)
