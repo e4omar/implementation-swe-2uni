@@ -48,8 +48,9 @@ class MessageSender:
 class OrderManagement:
 
     orders_dict = {}
+    id_counter = 0  
     def __init__(self):
-        self.id_counter = 0  
+        pass
 
     def add_new_order(self, table_num, items, special_requests):
         try:
@@ -58,14 +59,14 @@ class OrderManagement:
             print(f"[ERROR] OrderManagement add_new_order table number not int")
             return None
         
-        order_id = self.id_counter + 1
-        self.id_counter += 1
+        order_id = OrderManagement.id_counter + 1
+        OrderManagement.id_counter += 1
         
         OrderManagement.orders_dict[order_id] = {
-            'table_num': table_num,
-            'items': items,
-            'special_req': special_requests,
-            'status': 'New'    # New-> In Progress-> Ready
+            "table_num": table_num,
+            "items": items,
+            "special_requests": special_requests,
+            "status": "New"    # New-> In Progress-> Ready
         }
         return order_id
 
@@ -74,7 +75,7 @@ class OrderManagement:
 
     def update_order_progress(self, order_id, new_progress):
         if order_id in self.orders_dict:
-            OrderManagement.orders_dict[order_id]['status'] = new_progress
+            OrderManagement.orders_dict[order_id]["status"] = new_progress
             return True
         else:   
             return False
@@ -85,9 +86,6 @@ class OrderManagement:
             return True
         else:
             return False
-
-
-
 
 class Server:
     def __init__(self, addr):
@@ -111,15 +109,11 @@ class Server:
                 print(f"[ERROR] Error accepting client connections: {e}")
                 break
 
-
     def client_disconnect(self, conn, addr):
         try:
             self.client_sockets.remove(conn)
         except ValueError as e:
             print(f"[ERROR] Error removing client socket from list: {e}")
-
-
-
 
 class ClientHandler:
     def __init__(self, conn, addr, server):
@@ -146,7 +140,6 @@ class ClientHandler:
             
         return False
             
-    
     def handle(self):
         print(f"[NEW CONNECTION] {self.addr} connected")
         while self.connected:
@@ -176,17 +169,16 @@ class ClientHandler:
         elif msg == "!2": # Waitstaff: Add new order
             json_message = self.receive()
             data = json.loads(json_message)
-            table_num = data['table_num']
-            items = data['items']
-            special_requests = data['special_requests']
+            table_num = data["table_num"]
+            items = data["items"]
+            special_requests = data["special_requests"]
             order_id = self.order_management.add_new_order(table_num, items, special_requests)
             self.message_sender.send_message(self.conn, f"T:{order_id}")
-            ##### Testing
-            print(F"[Current orders]: {self.order_management.retrieve_current_orders()}")
+            print(f"[Current orders]: {self.order_management.retrieve_current_orders()}")
         elif msg == "!3": # Waitstaff: Delete order
             json_message = self.receive()
             data = json.loads(json_message)
-            order_id = int(data['order_id'])
+            order_id = int(data["order_id"])
             deleted = self.order_management.delete_order(order_id)
             if deleted:
                 self.message_sender.send_message(self.conn, f"T:Order ID {order_id} deleted successfully.")
@@ -195,8 +187,8 @@ class ClientHandler:
         elif msg == "!4": # Kitchen: Update order progress
             json_message = self.receive()
             data = json.loads(json_message)
-            order_id = int(data['order_id'])
-            new_progress = data['status']
+            order_id = int(data["order_id"])
+            new_progress = data["status"]
             updated = self.order_management.update_order_progress(order_id, new_progress)
             if updated:
                 self.message_sender.send_message(self.conn, f"T:Order ID {order_id} updated to {new_progress}.")
@@ -211,7 +203,6 @@ if __name__ == "__main__":
     server = Server(ADDR)
     server.start()
 
-
-#Error handling
-#client leaving handling
-#ending thread ond disconnecting
+# Error handling
+# client leaving handling
+# ending thread ond disconnecting

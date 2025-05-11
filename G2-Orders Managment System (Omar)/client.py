@@ -1,11 +1,8 @@
 import json
 import os
 import socket
-import threading
 import tkinter as tk
 from tkinter import messagebox
-import threading
-import time
 
 HEADER = 4  #  256^(4) max length
 PORT = 5050
@@ -29,12 +26,12 @@ class MessageSender:
         try:
             checksum = calculate_checksum(message)
             checksum_str = str(checksum).encode(FORMAT)
-            checksum_str += b' ' * (HEADER - len(checksum_str))
+            checksum_str += b" " * (HEADER - len(checksum_str))
 
             message = message.encode(FORMAT)
             msg_length = len(message)
             send_length = str(msg_length).encode(FORMAT)
-            send_length += b' ' * (HEADER - len(send_length)) #Padding to ensure HEADER size
+            send_length += b" " * (HEADER - len(send_length)) #Padding to ensure HEADER size
 
             self.conn.send(send_length)
             self.conn.send(message)
@@ -48,7 +45,7 @@ class MessageSender:
             return False        
     
     def recv_message(self):
-        full_msg = ''
+        full_msg = ""
         try:
             while True:
                 part = self.conn.recv(1024).decode(FORMAT)
@@ -153,10 +150,10 @@ class UI:
                     if isinstance(orders, dict):
                         self.orders_text.insert(tk.END, f"\n\n")
                         for order_id, order in orders.items():
-                            table_num = order.get('table_num', 'N/A')
-                            items = order.get('items', 'N/A')
-                            special_requests = order.get('special_requests', 'N/A')
-                            status = order.get('status', 'N/A')
+                            table_num = order.get("table_num", "N/A")
+                            items = order.get("items", "N/A")
+                            special_requests = order.get("special_requests", "N/A")
+                            status = order.get("status", "N/A")
                             if status.lower() == "done":
                                 status = "**DONE**"
                             order_text = f"{order_id:<10} {table_num:<15} {items:<30} {special_requests:<25} {status:<10}\n"
@@ -234,9 +231,9 @@ class WaitstaffUI(UI):
             return
 
         order_data = json.dumps({
-            'table_num': table_num,
-            'items': items,
-            'special_requests': special_requests
+            "table_num": table_num,
+            "items": items,
+            "special_requests": special_requests
         })
         self.send("!2")
         self.send(order_data)
@@ -257,7 +254,7 @@ class WaitstaffUI(UI):
             tk.messagebox.showerror("Input Error", "Order ID must be an integer and not blank.")
             return
 
-        delete_data = json.dumps({'order_id': order_id})
+        delete_data = json.dumps({"order_id": order_id})
         self.send("!3")
         self.send(delete_data)
         replay_msg = self.receive()
@@ -299,7 +296,7 @@ class KitchenStaffUI(UI):
             tk.messagebox.showerror("Input Error", "Status must not be blank.")
             return
 
-        update_data = json.dumps({'order_id': order_id, 'status': status})
+        update_data = json.dumps({"order_id": order_id, "status": status})
         self.send("!4")
         self.send(update_data)
         replay_msg = self.receive()
