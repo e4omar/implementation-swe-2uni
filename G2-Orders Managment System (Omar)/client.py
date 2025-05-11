@@ -245,7 +245,15 @@ class WaitstaffUI(UI):
         self.send("!3")
         self.send(delete_data)
         replay_msg = self.receive()
-        print(f"[delete_order]: {replay_msg}")
+
+        if replay_msg.startswith("T:"):
+            tk.messagebox.showinfo("Delete Confirmation", f"Order ID {order_id} deleted successfully.")
+
+        elif replay_msg.startswith("F:"):
+            tk.messagebox.showerror("Delete Error", f"Delete Failed. Order {order_id} is not present.")
+        else:
+            tk.messagebox.showerror("Order Error", "Failed to delete order.")
+
 
 class KitchenStaffUI(UI):
     def create_widgets(self):
@@ -271,7 +279,12 @@ class KitchenStaffUI(UI):
         self.send("!4")
         self.send(update_data)
         replay_msg = self.receive()
-        print(f"[update_order]: {replay_msg}")
+        if replay_msg.startswith("T:"):
+            tk.messagebox.showinfo("Order Update Confirmation", f"Order ID {order_id} status updated successfully.")
+        elif replay_msg.startswith("F:"):
+            tk.messagebox.showerror("Order Update Error", f"Update Failed. Order {order_id} is not present.")
+        else:
+            tk.messagebox.showerror("Order Update Error", "Failed to update order.")
 
 if __name__ == "__main__":
     client = Client(ADDR)

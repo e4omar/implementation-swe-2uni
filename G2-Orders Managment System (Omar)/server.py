@@ -75,10 +75,16 @@ class OrderManagement:
     def update_order_progress(self, order_id, new_progress):
         if order_id in self.orders_dict:
             OrderManagement.orders_dict[order_id]['status'] = new_progress
+            return True
+        else:   
+            return False
 
     def delete_order(self, order_id):
         if order_id in self.orders_dict:
             del OrderManagement.orders_dict[order_id]
+            return True
+        else:
+            return False
 
 
 
@@ -181,15 +187,21 @@ class ClientHandler:
             json_message = self.receive()
             data = json.loads(json_message)
             order_id = int(data['order_id'])
-            self.order_management.delete_order(order_id)
-            self.message_sender.send_message(self.conn, f"T:Order ID {order_id} deleted successfully.")
+            deleted = self.order_management.delete_order(order_id)
+            if deleted:
+                self.message_sender.send_message(self.conn, f"T:Order ID {order_id} deleted successfully.")
+            else:
+                self.message_sender.send_message(self.conn, f"F:Order ID {order_id} not found.")
         elif msg == "!4": # Kitchen: Update order progress
             json_message = self.receive()
             data = json.loads(json_message)
             order_id = int(data['order_id'])
             new_progress = data['status']
-            self.order_management.update_order_progress(order_id, new_progress)
-            self.message_sender.send_message(self.conn, f"T:Order ID {order_id} updated to {new_progress}.")
+            updated = self.order_management.update_order_progress(order_id, new_progress)
+            if updated:
+                self.message_sender.send_message(self.conn, f"T:Order ID {order_id} updated to {new_progress}.")
+            else:
+                self.message_sender.send_message(self.conn, f"F:Order ID {order_id} not found.")
 
         else: 
             print(f"[{self.addr}] not 4 options. msg: {msg}")
