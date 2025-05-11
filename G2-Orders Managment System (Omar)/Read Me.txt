@@ -1,8 +1,4 @@
-Please review the final version of the codebase. The following have been made:
 
-Server and Client Code: The codebase now includes only the necessary server and client components.
-Error Handling: Comprehensive error handling has been implemented to manage any incorrect inputs effectively.
-Functionality: All functionalities have been implemented as per the design specifications.
+Please run the server.py in one console tab and run as many clients.py files as you want each in a dedeciated terminal.
 
 
-Plus run the server.py in one console tab and run as many clients.py files as you want each in a dedeciated terminal.
