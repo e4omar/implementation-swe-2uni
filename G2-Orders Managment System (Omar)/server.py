@@ -106,6 +106,22 @@ class OrderManagement:
         else:
             return False
 
+class OrderFacade:
+    def __init__(self):
+        self.order_management = OrderManagement()
+
+    def add_order(self, table_num, items, special_requests):
+        return self.order_management.add_new_order(table_num, items, special_requests)
+
+    def get_orders(self):
+        return self.order_management.retrieve_current_orders()
+
+    def update_order(self, order_id, new_status):
+        return self.order_management.update_order_progress(order_id, new_status)
+
+    def delete_order(self, order_id):
+        return self.order_management.delete_order(order_id)
+
 class Server:
     def __init__(self, addr):
         self.addr = addr
@@ -140,7 +156,7 @@ class ClientHandler:
         self.addr = addr
         self.server = server
         self.connected = True
-        self.order_management = OrderManagement()
+        self.facade = OrderFacade()  # Use the facade
         self.message_sender = MessageSender(conn)
 
     def receive(self):
@@ -182,39 +198,37 @@ class ClientHandler:
         print(f"[ACTIVE CONNECTIONS] After Client Disconnect {threading.active_count() - 1}")
 
     def message_options(self, msg):
-        if msg == "!1": # Both: Retrieve current orders
-            current_orders = self.order_management.retrieve_current_orders()
+        if msg == "!1":  # Retrieve current orders
+            current_orders = self.facade.get_orders()
             self.message_sender.send_message(self.conn, json.dumps(current_orders))
-        elif msg == "!2": # Waitstaff: Add new order
+        elif msg == "!2":  # Add new order
             json_message = self.receive()
             data = json.loads(json_message)
             table_num = data["table_num"]
             items = data["items"]
             special_requests = data["special_requests"]
-            order_id = self.order_management.add_new_order(table_num, items, special_requests)
+            order_id = self.facade.add_order(table_num, items, special_requests)
             self.message_sender.send_message(self.conn, f"T:{order_id}")
-            print(f"[Current orders]: {self.order_management.retrieve_current_orders()}")
-        elif msg == "!3": # Waitstaff: Delete order
+        elif msg == "!3":  # Delete order
             json_message = self.receive()
             data = json.loads(json_message)
             order_id = int(data["order_id"])
-            deleted = self.order_management.delete_order(order_id)
+            deleted = self.facade.delete_order(order_id)
             if deleted:
                 self.message_sender.send_message(self.conn, f"T:Order ID {order_id} deleted successfully.")
             else:
                 self.message_sender.send_message(self.conn, f"F:Order ID {order_id} not found.")
-        elif msg == "!4": # Kitchen: Update order progress
+        elif msg == "!4":  # Update order progress
             json_message = self.receive()
             data = json.loads(json_message)
             order_id = int(data["order_id"])
             new_progress = data["status"]
-            updated = self.order_management.update_order_progress(order_id, new_progress)
+            updated = self.facade.update_order(order_id, new_progress)
             if updated:
                 self.message_sender.send_message(self.conn, f"T:Order ID {order_id} updated to {new_progress}.")
             else:
                 self.message_sender.send_message(self.conn, f"F:Order ID {order_id} not found.")
-
-        else: 
+        else:
             print(f"[{self.addr}] not 4 options. msg: {msg}")
 
 if __name__ == "__main__":
