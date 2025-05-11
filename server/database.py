@@ -2,9 +2,9 @@ import sqlite3
 
 DB_NAME = "scheduling.db"
 
-# ─────────────────────────────────────────────
+
 # Utility function to get a DB connection
-# ─────────────────────────────────────────────
+
 def get_connection():
     return sqlite3.connect(DB_NAME)
 

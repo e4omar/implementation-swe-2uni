@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
-from server.facade import ScheduleFacade
+from server.facade import Schedulefacade
 
-facade = ScheduleFacade()
+facade = Schedulefacade()
 
 # ─────────────── STAFF DASHBOARD ───────────────
 def show_staff_dashboard(user):
@@ -15,7 +15,7 @@ def show_staff_dashboard(user):
     notes = facade.get_notifications(user["staff_id"])
     if notes:
         notif_text = "\n".join([f"- {msg}" for msg in notes])
-        messagebox.showinfo("🔔 New Notifications", notif_text)
+        messagebox.showinfo("New Notifications", notif_text)
 
 
     def view_schedule():
@@ -99,7 +99,7 @@ def login_window():
         else:
             messagebox.showerror("Login Failed", "Invalid credentials.")
 
-    login = tk.Tk()
+    login = tk.Toplevel()
     login.title("Scheduling System Login")
     login.geometry("300x200")
 
@@ -237,4 +237,7 @@ def show_manager_dashboard(user):
 
 
 if __name__ == "__main__":
+    root = tk.Tk()
+    root.withdraw()  # Hide the base root window
     login_window()
+    root.mainloop()

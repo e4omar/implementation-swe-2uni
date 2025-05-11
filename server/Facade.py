@@ -1,7 +1,7 @@
 from server.controller import ScheduleController
 from server import database  # only needed for things like add_notification
 
-class ScheduleFacade:
+class Schedulefacade:
     def __init__(self):
         self.controller = ScheduleController()
 
@@ -28,9 +28,9 @@ class ScheduleFacade:
         if success:
             note = f"Your shift-change request (ID: {request_id}) was {new_status}."
             database.add_notification(staff_id, note)
-            return "✅ Status updated."
+            return " Status updated."
         else:
-            return "❌ Request not found."
+            return " Request not found."
 
     def submit_shift_change(self, staff_id, shift_id, new_start, new_end, reason):
         return self.controller.submit_shift_change_request(staff_id, shift_id, new_start, new_end, reason)
@@ -45,7 +45,7 @@ class ScheduleFacade:
             database.add_notification(staff_id, note)
             return "✅ Status updated."
         else:
-            return "❌ Request not found."
+            return "Request not found."
         
     def get_all_staff(self):
         return self.controller.get_all_staff_records()

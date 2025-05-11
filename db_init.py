@@ -70,5 +70,5 @@ CREATE TABLE IF NOT EXISTS Notification (
 conn.commit()
 conn.close()
 
-print("✅ Database initialized successfully.")
+print(" Database initialised successfully.")
     
