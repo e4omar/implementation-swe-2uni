@@ -1,0 +1,4 @@
+
+Please run the server.py in one console tab and run as many clients.py files as you want each in a dedeciated terminal.
+
+
