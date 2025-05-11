@@ -147,11 +147,7 @@ class ClientHandler:
                 msg = self.receive()
                 if msg == False:
                     break
-                self.message_options(msg)
-                print(f"[{self.addr}] individual msg: {msg}")
-                #for tetsing 
-                if msg == "Omar":
-                    self.message_sender.send_message(self.conn, "Order received")
+                self.message_options(msg)                
 
             except (socket.error, ConnectionResetError) as e:
                 print(f"[ERROR] Client connection lost {self.addr}: {e}")
@@ -178,6 +174,7 @@ class ClientHandler:
             special_requests = data['special_requests']
             order_id = self.order_management.add_new_order(table_num, items, special_requests)
             self.message_sender.send_message(self.conn, f"Order ID {order_id} added successfully.")
+            ##### Testing
             print(F"[Current orders]: {self.order_management.retrieve_current_orders()}")
         elif msg == "!3": # Waitstaff: Delete order
             json_message = self.receive()
@@ -193,6 +190,8 @@ class ClientHandler:
             self.order_management.update_order_progress(order_id, new_progress)
             self.message_sender.send_message(self.conn, f"Order ID {order_id} updated to {new_progress}.")
 
+        else: 
+            print(f"[{self.addr}] not 4 options. msg: {msg}")
 
 if __name__ == "__main__":
     print("[STARTING] server is starting...")

@@ -20,7 +20,6 @@ def calculate_checksum(message):
         checksum ^= ord(x)
     return checksum
 
-
 class MessageSender:
     def __init__(self, client_socket=None):
         self.conn = client_socket
@@ -111,13 +110,14 @@ class UI:
         self.root.title("Order Management Client")
         self.message_sender = MessageSender(self.client.client_socket)
         self.create_widgets()
+        self.update_orders()
         self.root.mainloop()
-        #self.update_orders()
 
     def create_widgets(self):
         self.orders_text = tk.Text(self.root, height=15, width=50)
         self.orders_text.pack()
 
+        # Add orders section
         self.add_order_frame = tk.Frame(self.root)
         self.add_order_frame.pack()
 
@@ -132,10 +132,11 @@ class UI:
         tk.Label(self.add_order_frame, text="Special Requests:").grid(row=2, column=0)
         self.special_requests_entry = tk.Entry(self.add_order_frame)
         self.special_requests_entry.grid(row=2, column=1)
-
+        
         self.add_order_button = tk.Button(self.add_order_frame, text="Add Order", command=self.add_order)
         self.add_order_button.grid(row=3, columnspan=2)
 
+        # Update orders section
         self.update_order_frame = tk.Frame(self.root)
         self.update_order_frame.pack()
 
@@ -150,6 +151,7 @@ class UI:
         self.update_order_button = tk.Button(self.update_order_frame, text="Update Order", command=self.update_order)
         self.update_order_button.grid(row=2, columnspan=2)
 
+        # Delete orders section
         self.delete_order_frame = tk.Frame(self.root)
         self.delete_order_frame.pack()
 
@@ -161,6 +163,7 @@ class UI:
         self.delete_order_button.grid(row=1, columnspan=2)
 
     def update_orders(self):
+        return
         if self.client.online:
             self.send("!1")
             response = self.receive()
@@ -182,6 +185,8 @@ class UI:
         })
         self.send("!2")
         self.send(order_data)
+        replay_msg = self.receive()
+        print(f"[add_order]: {replay_msg}")
 
     def update_order(self):
         order_id = self.update_order_id_entry.get()
@@ -189,12 +194,16 @@ class UI:
         update_data = json.dumps({'order_id': order_id, 'status': status})
         self.send("!4")
         self.send(update_data)
+        replay_msg = self.receive()
+        print(f"[update_order]: {replay_msg}")
 
     def delete_order(self):
         order_id = self.delete_order_id_entry.get()
         delete_data = json.dumps({'order_id': order_id})
         self.send("!3")
         self.send(delete_data)
+        replay_msg = self.receive()
+        print(f"[delete_order]: {replay_msg}")
 
     def main_thread(self):
         while self.client.online:
@@ -240,11 +249,9 @@ class UI:
             elif full_msg is False:
                 self.client.disconnect()
             else:
-                print(f"RECEIVED: {full_msg}")
+                print(f"[receieve func bfore returning ]RECEIVED: {full_msg}")
 
         return full_msg
-
-
 
 if __name__ == "__main__":
     client = Client(ADDR)
