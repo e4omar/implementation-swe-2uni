@@ -125,9 +125,22 @@ class UI:
         self.root.mainloop()
 
     def create_widgets(self):
-        self.orders_text = tk.Text(self.root, height=30, width=100)
-        self.orders_text.pack()
+        self.orders_window = tk.Toplevel(self.root)
+        self.orders_window.title("Current Orders")
+        self.orders_window.geometry("800x400")
+        self.orders_window.resizable(True, True)
 
+        frame = tk.Frame(self.orders_window)
+        frame.pack(fill=tk.BOTH, expand=True)
+        self.orders_text = tk.Text(frame, wrap=tk.NONE, height=20, width=100)
+        self.orders_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar = tk.Scrollbar(frame, command=self.orders_text.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.orders_text.config(yscrollcommand=scrollbar.set)
+
+        # Add column headers
+        self.orders_text.insert(tk.END, f"{'Order ID':<10} {'Table Number':<15} {'Items':<30} {'Special Requests':<25} {'Status':<10}\n")
+        self.orders_text.insert(tk.END, "-"*90 + "\n\n")
     def update_orders(self):
         if self.client.online:
             self.send("!1")
@@ -135,16 +148,18 @@ class UI:
             if response:
                 try:
                     orders = json.loads(response)
-                    self.orders_text.delete(1.0, tk.END)
+                    self.orders_text.delete(3.0, tk.END)  # Keep the headings
                     if isinstance(orders, dict):
+                        self.orders_text.insert(tk.END, f"\n\n")
                         for order_id, order in orders.items():
                             table_num = order.get('table_num', 'N/A')
                             items = order.get('items', 'N/A')
+                            special_requests = order.get('special_requests', 'N/A')
                             status = order.get('status', 'N/A')
-                            self.orders_text.insert(
-                                tk.END,
-                                f"Order ID: {order_id}, Table: {table_num}, Items: {items}, Status: {status}\n"
-                            )
+                            if status.lower() == "done":
+                                status = "**DONE**"
+                            order_text = f"{order_id:<10} {table_num:<15} {items:<30} {special_requests:<25} {status:<10}\n"
+                            self.orders_text.insert(tk.END, order_text)
                     else:
                         self.orders_text.insert(tk.END, f"Unexpected data: {orders}\n")
                 except Exception as e:
@@ -169,6 +184,7 @@ class UI:
                 self.client.disconnect()
             else:
                 return full_msg
+
 
 class WaitstaffUI(UI):
     def create_widgets(self):

@@ -46,8 +46,9 @@ class MessageSender:
             return False
 
 class OrderManagement:
+
+    orders_dict = {}
     def __init__(self):
-        OrderManagement.orders_dict = {}
         self.id_counter = 0  
 
     def add_new_order(self, table_num, items, special_requests):
