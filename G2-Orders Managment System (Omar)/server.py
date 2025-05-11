@@ -178,6 +178,7 @@ class ClientHandler:
             special_requests = data['special_requests']
             order_id = self.order_management.add_new_order(table_num, items, special_requests)
             self.message_sender.send_message(self.conn, f"Order ID {order_id} added successfully.")
+            print(F"[Current orders]: {self.order_management.retrieve_current_orders()}")
         elif msg == "!3": # Waitstaff: Delete order
             json_message = self.receive()
             data = json.loads(json_message)
