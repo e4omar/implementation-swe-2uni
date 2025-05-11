@@ -150,13 +150,14 @@ class Server:
         except ValueError as e:
             print(f"[ERROR] Error removing client socket from list: {e}")
 
+
 class ClientHandler:
     def __init__(self, conn, addr, server):
         self.conn = conn
         self.addr = addr
         self.server = server
         self.connected = True
-        self.facade = OrderFacade()  # Use the facade
+        self.facade = OrderFacade() 
         self.message_sender = MessageSender(conn)
 
     def receive(self):
