@@ -20,13 +20,13 @@ def seed_staff_users():
                 INSERT INTO Staff (name, role, username, password)
                 VALUES (?, ?, ?, ?)
             ''', (name, role, username, password))
-            print(f"✅ Added user: {name} ({role})")
+            print(f" Added user: {name} ({role})")
         else:
-            print(f"ℹ️ User '{username}' already exists.")
+            print(f"User '{username}' already exists.")
 
     conn.commit()
     conn.close()
-    print("🚀 Seeding complete.")
+    print("Seeding complete.")
 
 if __name__ == "__main__":
     seed_staff_users()
