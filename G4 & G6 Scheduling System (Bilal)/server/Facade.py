@@ -43,7 +43,7 @@ class Schedulefacade:
         if success:
             note = f"Your shift-change request (ID: {request_id}) was {new_status}."
             database.add_notification(staff_id, note)
-            return "✅ Status updated."
+            return "Status updated."
         else:
             return "Request not found."
         

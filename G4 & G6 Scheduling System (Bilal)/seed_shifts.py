@@ -11,7 +11,7 @@ def seed_demo_shifts():
     result = cursor.fetchone()
 
     if not result:
-        print("❌ Alice (staff) not found. Please seed users first.")
+        print("Alice (staff) not found. Please seed users first.")
         return
 
     staff_id = result[0]
@@ -31,7 +31,7 @@ def seed_demo_shifts():
 
     conn.commit()
     conn.close()
-    print("✅ Demo shifts seeded for Alice.")
+    print("Demo shifts seeded for Alice.")
 
 if __name__ == "__main__":
     seed_demo_shifts()
